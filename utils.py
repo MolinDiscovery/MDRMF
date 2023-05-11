@@ -88,19 +88,21 @@ def load_data(datafile: str, MolWt: int, first_index: bool) -> pd.DataFrame:
     return df
 
 
-def receptor_data(df,receptor_name, featurizer=dc.feat.ConvMolFeaturizer(), seed=1, input_transformer=dc.trans.NormalizationTransformer):
+def splitter(df,score_column, featurizer=dc.feat.ConvMolFeaturizer(), seed=1, input_transformer=dc.trans.NormalizationTransformer):
     '''
     This function takes a DataFrame containing data for multiple receptors, processes it, and returns training, validation, and test datasets that can be used in a DeepChem model.
+    
+    Currently the function requires there to be a column called 'SMILES' containing SMILES for each molecule.
 
     Parameters:
     - df (pd.DataFrame): A DataFrame containing data for all receptors.
-    - receptor_name (str): The name of the receptor for which the data is to be processed.
+    - score_column (str): The name of column containing docking scores in the df.
     - featurizer (dc.feat): The featurizer to use. Defaults to ConvMolFeaturizer(). To use another the use MolGraphConvFeaturizer use dc.feat.MolGraphConvFeaturizer().
     - seed (int, optional): The random seed for splitting the data into train, validation, and test sets. Default is 1.
     - transformer (dc.trans.NormalizationTransformer, optional): set the DeepChem transformer to use. Defaults to NormalizationTransformer.
       Please note you can set this to `transformer=utils.DoNothingTransformer` which avoids any transformation altogether;
-      assuming you imported this file as utils.
-      Also note that the transformer transforms the y-values not the X-values.
+      assuming you imported this file as `import utils`.
+      Also note that the transformer always applies to y-values not X-values.
     
     Returns:
     - train_dataset (dc.data.NumpyDataset): A DeepChem NumpyDataset object containing the training data.
@@ -112,14 +114,14 @@ def receptor_data(df,receptor_name, featurizer=dc.feat.ConvMolFeaturizer(), seed
     '''
     
     # This code takes the initial df and republish it with data only on one receptor
-    df_receptor =  df[[receptor_name, 'molecules', 'SMILES']]
+    df_receptor =  df[[score_column, 'molecules', 'SMILES']]
     # Applying a mask to remove possible 0 values.
-    mask = df_receptor[receptor_name] == 0.0
+    mask = df_receptor[score_column] == 0.0
     df_receptor = df_receptor.drop(df[mask].index)
 
     feat = featurizer
     X = feat.featurize(df_receptor['molecules'])
-    y = df_receptor[receptor_name].to_numpy()
+    y = df_receptor[score_column].to_numpy()
     ids = df_receptor['SMILES']
 
     # Create dataset for deepchem
