@@ -37,12 +37,18 @@ class Featurizer:
             **kwargs: Additional keyword arguments to pass to the featurization method.
         """
         if method == 'morgan':
-            self.df['features'] = self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(AllChem.GetMorganFingerprintAsBitVect(mol, **kwargs)))
+            # self.df['features'] = self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(AllChem.GetMorganFingerprintAsBitVect(mol, **kwargs)))
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(AllChem.GetMorganFingerprintAsBitVect(mol, **kwargs))))
         elif method == 'topological':
-            self.df['features'] = self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(FingerprintMols.FingerprintMol(mol, **kwargs)))
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(FingerprintMols.FingerprintMol(mol, **kwargs))))
+            # self.df['features'] = self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(FingerprintMols.FingerprintMol(mol, **kwargs)))
         else:
             raise ValueError(f"Unsupported featurization method: {method}")
-        
+
+        self.features = np.vstack(features_gen)
+
+        return self.features
+
     def _convert_to_np_array(self, bit_vect) -> np.ndarray:
         """
         Converts an RDKit explicit bit vector to a numpy array.
@@ -53,46 +59,26 @@ class Featurizer:
         Returns:
             np.ndarray: The converted numpy array.
         """
-        np_array = np.zeros((bit_vect.GetNumBits(),), dtype=np.int8)
+        np_array = np.zeros((1, bit_vect.GetNumBits()), dtype=np.int8)
         DataStructs.ConvertToNumpyArray(bit_vect, np_array)
         return np_array
-
-
-    def save(self, filename: str) -> None:
-        """
-        Saves the featurized DataFrame to a pickle file.
-
-        Args:
-            filename (str): The name of the file to save the featurized DataFrame to.
-        """
-        with open(filename, 'wb') as f:
-            pickle.dump(self.df, f)
-
-    @classmethod
-    def load(cls, filename: str) -> 'Featurizer':
-        """
-        Loads a featurized DataFrame from a pickle file.
-
-        Args:
-            filename (str): The name of the file to load the featurized DataFrame from.
-
-        Returns:
-            Featurizer: A Featurizer instance with the loaded DataFrame.
-        """
-        with open(filename, 'rb') as f:
-            df = pickle.load(f)
-        instance = cls(df=df)
-        return instance
     
     def get_df(self):
         """
-        Returns the featurized molecules for inspection.
+        Returns:
+            The DataFrame
+        """
+        return self.df
+
+    def get_features(self):
+        """
+        Returns the 2D numpy array of featurized molecules.
 
         Returns:
-            The featurized molecules.
+            np.ndarray: The featurized molecules.
         """
-        if 'features' in self.df.columns:
-            return self.df
+        if self.features is not None:
+            return self.features
         else:
             print("No features available. Please run the featurize method first.")
 
