@@ -25,6 +25,7 @@ class Modeller:
 
         # Delete selected points from dataset
         mask = np.ones(len(self.dataset.X), dtype=bool)
+        mask[random_indices] = False
         self.dataset.X = self.dataset.X[mask]
         self.dataset.y = self.dataset.y[mask]
         self.dataset.ids = self.dataset.ids[mask]
