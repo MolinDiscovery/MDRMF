@@ -23,6 +23,10 @@ class Dataset:
         self.ids = np.array(ids, dtype=object)
         self.w = np.asarray(w)
 
+        # Check consistency of input data
+        if not all(len(data) == n_samples for data in [self.X, self.y, self.ids, self.w]):
+            raise ValueError("Inconsistent input data: all input data should have the same number of samples.")
+
     def __repr__(self):
         return f"<Dataset X.shape: {self.X.shape}, y.shape: {self.y.shape}, w.shape: {self.w.shape}, ids: {self.ids}>"
     
@@ -43,6 +47,18 @@ class Dataset:
 
         return Dataset(g_X, g_y, g_ids, g_w)
 
+    def get_samples(self, n_samples, remove_points=False):
+        random_indices = np.random.choice(len(self.X), size=n_samples, replace=False)
+        g_X = self.X[random_indices]
+        g_y = self.y[random_indices]
+        g_ids = self.ids[random_indices]
+        g_w = self.w[random_indices]
+
+        if remove_points:
+            self.remove_points(random_indices)
+
+        return Dataset(g_X, g_y, g_ids, g_w)
+
     def set_points(self, indices):
         self.X = self.X[indices]
         self.y = self.y[indices]
@@ -50,6 +66,7 @@ class Dataset:
         self.w = self.w[indices]
 
     def remove_points(self, indices):
+        indices = np.sort(indices)[::-1] # remove indices from desending order
         mask = np.ones(len(self.X), dtype=bool)
         mask[indices] = False
         self.X = self.X[mask]
@@ -89,3 +106,12 @@ class Dataset:
 
         # Return a new Dataset that combines the data from all the datasets
         return Dataset(X, y, ids, w)
+    
+    @staticmethod
+    def missing_points(original_dataset, model_dataset):
+        # compare the ids
+
+        points_in_model = np.isin(original_dataset.ids, model_dataset.ids, invert=True)
+        dataset = original_dataset.get_points(points_in_model)
+
+        return dataset
