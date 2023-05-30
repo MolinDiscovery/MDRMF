@@ -5,33 +5,28 @@ class Modeller:
     """
     Base class to construct other models from
     """
-    def __init__(self, dataset, iterations=10, initial_sample_size=10, acquisition_size=10, acquisition_method="greedy", retrain=True) -> None:
+    def __init__(self, dataset, evaluator=None, iterations=10, initial_sample_size=10, acquisition_size=10, acquisition_method="greedy", retrain=True) -> None:
         
         self.dataset = dataset
+        self.evaluator = evaluator
         self.iterations = iterations
         self.initial_sample_size = initial_sample_size
         self.acquisition_size = acquisition_size
         self.acquisition_method = acquisition_method
         self.retrain = retrain
+        self.results = {}
 
     def _initial_sampler(self):
-        # Select random points in the dataset
-        random_indices = np.random.choice(len(self.dataset.X), size=self.initial_sample_size, replace=False)
 
-        # Select random points
-        random_points = self.dataset.get_points(random_indices)
-
-        # Delete selected points from dataset
-        self.dataset.remove_points(random_indices)
-
+        random_points = self.dataset.get_samples(self.initial_sample_size, remove_points=True)
 
         return random_points
 
     def _acquisition(self, model):
+        # Predict on the full dataset
+        preds = model.predict(self.dataset.X)
+
         if self.acquisition_method == "greedy":
-            
-            # Predict on the full dataset
-            preds = model.predict(self.dataset.X)
 
             # Find indices of the x-number of smallest values
             indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
@@ -42,10 +37,22 @@ class Modeller:
             # Remove these datapoints from the dataset
             self.dataset.remove_points(indices)
 
-            return acq_dataset
+        if self.acquisition_method == "random":
+            
+            # Get random points and delete from dataset
+            acq_dataset = self.dataset.get_samples(self.acquisition_size, remove_points=True)
+
+        return acq_dataset
     
-    def fit():
+    def fit(self):
         pass # Must be defined in child classes
 
     def predict():
         pass # Must be defined in child classes
+    
+    def call_evaluator(self, i):
+        results = self.evaluator.evaluate(self, self.dataset)
+        print(f"Iteration {i}, Results: {results}")
+
+        # Store results
+        self.results[i] = results
