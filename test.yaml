@@ -1,0 +1,54 @@
+- Experiment:
+    name: Exp01
+
+    data:
+      datafile: data10k.csv
+      SMILES_col: SMILES
+      scores_col: r_i_docking_score
+      ids_col: SMILES
+
+    featurizer:
+      name: morgan
+      nBits: 512
+      radius: 2
+
+    model:
+      name: RFModeller
+      iterations: 60
+      initial_sample_size: 30
+      acquisition_size: 30
+      acquisition_method: greedy
+      # We can put any params from the underlying model for example
+      # n_estimators: 50 for the `RFModeller`
+
+    metrics: 
+      names: [top-k, R2_k]
+      k: [100, 50]
+
+    repeat: 5
+
+- Experiment:
+    name: Exp02
+
+    dataset: dataset.pkl
+
+    model:
+      name: RFModel
+      iterations: 90
+      initial_sample_size: 20
+      acquisition_size: 20
+      acquisition_method: greedy
+
+    metrics: 
+      names: [top-k, R2_k]
+      k: [100, 50]
+
+    repeat: 5
+
+- Dataset:
+    name: dataset01
+
+    featurizer:
+      name: morgan
+      nBits: 256
+      radius: 2
