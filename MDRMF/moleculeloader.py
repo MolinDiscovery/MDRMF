@@ -41,10 +41,10 @@ class MoleculeLoader:
         if 'molecules' not in self._df.columns:
             self._df['molecules'] = self._df[self.smi_col].apply(Chem.MolFromSmiles)
 
-        self._df.rename(columns={self.scores_col: "scores"}, inplace=True)
-        self._df.rename(columns={self.smi_col: "SMILES"}, inplace=True)
+        #self._df.rename(columns={self.scores_col: "scores"}, inplace=True)
+        #self._df.rename(columns={self.smi_col: "SMILES"}, inplace=True)
 
-        self._df.sort_values(by="scores")
+        self._df.sort_values(by=self.scores_col)
 
     @property
     def df(self):

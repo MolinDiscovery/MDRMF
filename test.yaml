@@ -1,16 +1,22 @@
+- Parallelize_experiments: False
+
 - Experiment:
     name: Exp01
+    replicate: 5
+    parallelize: False # NOT IMPLEMENTED. Allows one to parallalize each replicate
 
     data:
-      datafile: data10k.csv
+      datafile: 10K.csv
       SMILES_col: SMILES
       scores_col: r_i_docking_score
       ids_col: SMILES
 
     featurizer:
       name: morgan
-      nBits: 512
       radius: 2
+      nBits: 512
+      # We can put any params from the underlying model for example
+      # n_estimators: 50 for the `RFModeller`
 
     model:
       name: RFModeller
@@ -25,10 +31,11 @@
       names: [top-k, R2_k]
       k: [100, 50]
 
-    repeat: 5
 
 - Experiment:
     name: Exp02
+    replicate: 5
+    parallelize: False
 
     dataset: dataset.pkl
 
@@ -43,7 +50,7 @@
       names: [top-k, R2_k]
       k: [100, 50]
 
-    repeat: 5
+
 
 - Dataset:
     name: dataset01
