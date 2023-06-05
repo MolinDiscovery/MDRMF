@@ -115,3 +115,7 @@ class Dataset:
         dataset = original_dataset.get_points(points_in_model)
 
         return dataset
+    
+    def copy(self):
+        import copy
+        return copy.deepcopy(self)

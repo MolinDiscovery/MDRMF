@@ -1,5 +1,5 @@
 import numpy as np
-from ..dataset import Dataset
+from MDRMF.dataset import Dataset
 
 class Modeller:
     """
@@ -18,7 +18,7 @@ class Modeller:
         """
         Initializes a Modeller object with the provided parameters.
         """        
-        self.dataset = dataset
+        self.dataset = dataset.copy()
         self.evaluator = evaluator
         self.iterations = iterations
         self.initial_sample_size = initial_sample_size

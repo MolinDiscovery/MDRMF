@@ -1,7 +1,7 @@
 import logging
 from sklearn.ensemble import RandomForestRegressor
-from .modeller import Modeller
-from ..dataset import Dataset
+from MDRMF.models.modeller import Modeller
+from MDRMF.dataset import Dataset
 
 class RFModeller(Modeller):
 
@@ -42,9 +42,6 @@ class RFModeller(Modeller):
             if self.evaluator is not None:
                 self.call_evaluator(i=i)
 
-        # If we return the amount of molecules trained on along with a set of predictions, the experimenter can use this info
-        # to make desired k-100 graphs. Although this should probably be handled by an evaluator class. We call the evaluator class and get
-        # info that we want to evaluate on each iteration. This could also be R^2 for the range of values in the model_dataset and other other things.
         return self.model
     
     def predict(self, dataset: Dataset):
