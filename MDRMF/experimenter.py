@@ -61,7 +61,7 @@ class Experimenter:
         
         end_time = time.time()
         elapsed_time = end_time - start_time
-        
+
         print("Lab time over. All experiments conducted. Look for the results folder.")
         print("Time elapsed: ", _format_time(elapsed_time))
     
@@ -176,3 +176,7 @@ if __name__ == "__main__":
 
     experimenter = Experimenter(args.config_file)
     experimenter.conduct_all_experiments()
+
+    # To run an experiment after `pip install MDRMF` do this in your command prompt.
+    # python -m MDRMF.experimenter config-file.yaml
+    # An example config file is found in an example folder (not created yet)
