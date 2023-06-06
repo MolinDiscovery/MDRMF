@@ -83,6 +83,20 @@ class Modeller:
         This method needs to be implemented in child classes.
         """        
         pass
+
+    def save():
+        """
+        Save the model
+        This method needs to be implemented in child classes.
+        """         
+        pass
+
+    def load():
+        """
+        Load the model
+        This method needs to be implemented in child classes.
+        """ 
+        pass
     
     def call_evaluator(self, i):
         """

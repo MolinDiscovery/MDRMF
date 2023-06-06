@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import inspect
 import time
+import shutil
 from typing import List
 from MDRMF.evaluator import Evaluator
 import MDRMF.models as mfm
@@ -16,7 +17,15 @@ class Experimenter:
 
         self.config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), config_file)
         self.experiments = self._load_config()
+        self.root_dir = "Experiment_Root"
+
+        # Setting up root directory
+        os.makedirs(self.root_dir, exist_ok=True)
     
+        # Copy settings file to root dir
+        destination_file_path = os.path.join(self.root_dir, "settings.yaml")
+        shutil.copy(self.config_file, destination_file_path)
+
     def _load_config(self) -> List[dict]:
         with open(self.config_file, 'r') as stream:
             try:
@@ -32,7 +41,9 @@ class Experimenter:
         return [config]
     
     def conduct_all_experiments(self):
+
         start_time = time.time()
+ 
         for config in self.experiments:
             for experiment in config:
                 key, value = list(experiment.items())[0]
@@ -106,7 +117,7 @@ class Experimenter:
 
         # --- Directory setup --- #
         # Create main directory
-        experiment_directory = os.path.join("Experiment_Root", exp_config['name'])
+        experiment_directory = os.path.join(self.root_dir, exp_config['name'])
         os.makedirs(experiment_directory, exist_ok=True)
 
         # Save dataset
@@ -151,8 +162,8 @@ class Experimenter:
             model.train()
             
             # Save model
-            model_file = os.path.join(models_directory, f"run{i+1}.pkl")
-            # model.save(model_file)  # Replace with actual code to save model
+            model_file = os.path.join(models_directory, f"{model_name} Exp{i+1}.pkl")
+            model.save(model_file)
 
             # Add results to list
             results = model.results
