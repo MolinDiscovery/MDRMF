@@ -19,19 +19,20 @@
       # nBits and radius from RDkit when making morgan fingerprints
 
     model:
-      name: RFModeller
+      name: RFModeller # This has to match the class name of the model you wants to use.
       iterations: 3
       initial_sample_size: 30
       acquisition_size: 30
       acquisition_method: greedy
       # We can put any params from the underlying model for example
       # n_estimators: 50 for the `RFModeller` which is using scikit-backend
+      # We can also leave out all parameters alltogether to apply the default params. We do have to specify what model to use though.
 
     metrics: 
       names: [top-k]
       k: [100]
 
-
+# Notice how you can use a pre-featurized dataset.
 - Experiment:
     name: Exp02
     replicate: 5
@@ -46,10 +47,10 @@
       acquisition_size: 20
       acquisition_method: random
 
+    # You can make lists of the things you want to evaluate on the models. The output will be in the results files.
     metrics: 
       names: [top-k, R2_k]
       k: [100, 50]
-
 
 
 - Dataset:
