@@ -4,6 +4,7 @@ import pandas as pd
 import inspect
 import time
 import shutil
+import datetime
 from typing import List
 from MDRMF.evaluator import Evaluator
 import MDRMF.models as mfm
@@ -13,18 +14,34 @@ class Experimenter:
 
     def __init__(self, config_file: str):
         #self.config_file = config_file
-        #self.experiments = self._load_config()
 
         self.config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), config_file)
         self.experiments = self._load_config()
-        self.root_dir = "Experiment_Root"
+
+        # Generate ids
+        self.protocol_name = self.get_protocol_name()
+        id = self.generate_id(self.protocol_name)
 
         # Setting up root directory
+        self.root_dir = id
         os.makedirs(self.root_dir, exist_ok=True)
     
         # Copy settings file to root dir
         destination_file_path = os.path.join(self.root_dir, "settings.yaml")
         shutil.copy(self.config_file, destination_file_path)
+
+    def get_protocol_name(self) -> str:
+        try:
+            return self.experiments[0][0]['Protocol_name']
+        except KeyError as exc:
+            print(f"KeyError: 'Protocol_name' not found in configuration file. Please ensure 'Protocol_name' is specified in the configuration.")
+            return "protocol"
+
+    def generate_id(self, protocol_name: str) -> str:
+        current_time = datetime.datetime.now()
+        formatted_time = current_time.strftime('%y%m%d-%H%M%S')  # YYMMDD-HHMMSS
+        id = f"{protocol_name}-{formatted_time}"
+        return id
 
     def _load_config(self) -> List[dict]:
         with open(self.config_file, 'r') as stream:

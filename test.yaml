@@ -1,4 +1,4 @@
-- Parallelize_experiments: False
+#- Protocol_name: test protocol # Use this to define a unique protocol name, if not defined it defaults to 'protocol'
 
 - Experiment:
     name: Exp01
