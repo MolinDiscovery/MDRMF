@@ -1,7 +1,7 @@
 # Import modules
 
-__version__ = '0.0.3'
-# dev: __version__ = '0.0.4'
+__version__ = '0.0.4'
+# dev: __version__ = '0.0.5'
 
 from .featurizer import Featurizer
 from .moleculeloader import MoleculeLoader

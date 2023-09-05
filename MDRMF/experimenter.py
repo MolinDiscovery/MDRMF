@@ -26,15 +26,12 @@ class Experimenter:
         self.root_dir = id
         os.makedirs(self.root_dir, exist_ok=True)
     
-        # Copy settings file to root dir
-        destination_file_path = os.path.join(self.root_dir, "settings.yaml")
-        shutil.copy(self.config_file, destination_file_path)
+        self.create_meta_data()
 
     def get_protocol_name(self) -> str:
         try:
             return self.experiments[0][0]['Protocol_name']
         except KeyError as exc:
-            print(f"KeyError: 'Protocol_name' not found in configuration file. Please ensure 'Protocol_name' is specified in the configuration.")
             return "protocol"
 
     def generate_id(self, protocol_name: str) -> str:
@@ -56,6 +53,14 @@ class Experimenter:
             config = [config]
 
         return [config]
+    
+    def create_meta_data(self):
+        destination_file_path = os.path.join(self.root_dir, "settings.yaml")
+        shutil.copy(self.config_file, destination_file_path)
+
+        meta_destination = os.path.join(self.root_dir, "meta_data.txt")
+        with open(meta_destination, "w") as f:
+            f.write(self.root_dir)
     
     def conduct_all_experiments(self):
 
