@@ -1,7 +1,7 @@
-- Protocol_name: morgen_and_2D
+#- Protocol_name: morgan_and_2D
 
-- Experiment
-  name: morgen_exp
+- Experiment:
+  name: morgan_exp
   replicate: 5
 
     data:
@@ -11,7 +11,7 @@
       ids_col: SMILES
 
     featurizer:
-      name: morgen
+      name: morgan
       radius: 2
       nBits: 310
 
