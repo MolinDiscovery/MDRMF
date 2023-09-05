@@ -1,0 +1,44 @@
+- Protocol_name: morgen_and_2D
+
+- Experiment
+  name: morgen_exp
+  replicate: 5
+
+    data:
+      datafile: 10K.csv
+      SMILES_col: SMILES
+      scores_col: r_i_docking_score
+      ids_col: SMILES
+
+    featurizer:
+      name: morgen
+      radius: 2
+      nBits: 310
+
+    model:
+      name: RFModeller
+      iterations: 3
+      initial_sample_size: 10
+      acquisition_size: 10
+      acquisition_method: greedy
+
+    metrics: 
+      names: [top-k]
+      k: [100]
+
+- Experiment:
+    name: 2D_exp
+    replicate: 5
+
+    dataset: 2D.pkl
+
+    model:
+      name: RFModeller
+      iterations: 3
+      initial_sample_size: 10
+      acquisition_size: 10
+      acquisition_method: greedy
+
+    metrics: 
+      names: [top-k]
+      k: [100]
