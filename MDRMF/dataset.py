@@ -18,7 +18,7 @@ class Dataset:
         if ids is None:
             ids = np.arange(n_samples)
 
-        self.X = X
+        self.X = np.asarray(X)
         self.y = np.asarray(y)
         self.ids = np.array(ids, dtype=object)
         self.w = np.asarray(w)
