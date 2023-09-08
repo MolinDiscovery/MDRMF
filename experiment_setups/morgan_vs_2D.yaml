@@ -1,8 +1,8 @@
-#- Protocol_name: morgan_and_2D
+- Protocol_name: morgan_and_2D
 
 - Experiment:
-  name: morgan_exp
-  replicate: 5
+    name: morgan_exp
+    replicate: 5
 
     data:
       datafile: 10K.csv
