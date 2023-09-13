@@ -7,18 +7,49 @@ from MDRMF.dataset import Dataset
 
 class RFModeller(Modeller):
 
-    def __init__(self, dataset, evaluator=None, iterations=10, initial_sample_size=10, acquisition_size=10, acquisition_method="greedy", retrain=True, **kwargs) -> None:
-        super().__init__(dataset, evaluator, iterations, initial_sample_size, acquisition_size, acquisition_method, retrain)
-        from sklearn.ensemble import RandomForestRegressor
+    def __init__(
+        self, 
+        dataset, 
+        evaluator=None, 
+        iterations=10, 
+        initial_sample_size=10, 
+        acquisition_size=10, 
+        acquisition_method="greedy", 
+        retrain=True,
+        seeds=[],
+        **kwargs) -> None:
+
+        super().__init__(
+            dataset, 
+            evaluator, 
+            iterations, 
+            initial_sample_size, 
+            acquisition_size, 
+            acquisition_method, 
+            retrain,
+            seeds
+            )
+
         self.kwargs = kwargs
         self.model = RandomForestRegressor(**self.kwargs)
 
     def fit(self):
         
         # Get random points
-        random_pts = self._initial_sampler()
+        if self.seeds == []:
+            initial_pts = self._initial_sampler()
         
-        self.model.fit(random_pts.X, random_pts.y)
+        # If freeze_sample is not empty and it's a list of integers use this as starting points
+        elif self.seeds and isinstance(self.seeds, list) and all(isinstance(i, int) for i in self.seeds):
+
+            # Get the seeded points and remember to remove them from the dataset
+            initial_pts = self.dataset.get_points(self.seeds, remove_points=True)
+
+        else:
+            logging.error("Seeds failed. Seeds must be a list of integers like [5, 25, 600, 5000]")
+        
+        print(f"y values of starting points {initial_pts.y}")
+        self.model.fit(initial_pts.X, initial_pts.y)
 
         for i in range(self.iterations):
         # Acquire new points
@@ -26,7 +57,7 @@ class RFModeller(Modeller):
 
             # Merge old and new points
             if i == 0:
-                model_dataset = self.dataset.merge_datasets([random_pts, acquired_pts])
+                model_dataset = self.dataset.merge_datasets([initial_pts, acquired_pts])
             else:
                 model_dataset = self.dataset.merge_datasets([model_dataset, acquired_pts])
 

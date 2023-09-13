@@ -1,8 +1,9 @@
-- Protocol_name: test protocol # Use this to define a unique protocol name, if not defined it defaults to 'protocol'
+#- Protocol_name: test protocol # Use this to define a unique protocol name, if not defined it defaults to 'protocol'
 
 - Experiment:
     name: Exp01
     replicate: 5
+    freeze_sample: True
 
     data:
       datafile: 10K.csv
@@ -19,11 +20,10 @@
 
     model:
       name: RFModeller # This has to match the class name of the model you wants to use.
-      iterations: 10
+      iterations: 30
       initial_sample_size: 30
       acquisition_size: 30
       acquisition_method: greedy
-      seeds: [5, 10, 15, 50, 100, 5000]
       # We can put any params from the underlying model for example
       # n_estimators: 50 for the `RFModeller` which is using scikit-backend
       # We can also leave out all parameters alltogether to apply the default params. We do have to specify what model to use though.
@@ -42,7 +42,7 @@
 
     model:
       name: RFModeller
-      iterations: 10
+      iterations: 30
       initial_sample_size: 20
       acquisition_size: 20
       acquisition_method: random

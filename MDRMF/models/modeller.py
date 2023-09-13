@@ -14,7 +14,16 @@ class Modeller:
         acquisition_method (str): The acquisition method to use, either "greedy" or "random".
         retrain (bool): Flag indicating whether to retrain the model in each iteration.
     """
-    def __init__(self, dataset, evaluator=None, iterations=10, initial_sample_size=10, acquisition_size=10, acquisition_method="greedy", retrain=True) -> None:
+    def __init__(
+            self, 
+            dataset, 
+            evaluator=None, 
+            iterations=10, 
+            initial_sample_size=10, 
+            acquisition_size=10, 
+            acquisition_method="greedy", 
+            retrain=True,
+            seeds=[]) -> None:
         """
         Initializes a Modeller object with the provided parameters.
         """        
@@ -25,6 +34,7 @@ class Modeller:
         self.acquisition_size = acquisition_size
         self.acquisition_method = acquisition_method
         self.retrain = retrain
+        self.seeds = seeds
         self.results = {}
 
     def _initial_sampler(self):

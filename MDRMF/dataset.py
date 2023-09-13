@@ -39,11 +39,14 @@ class Dataset:
         with open(filename, "rb") as f:
             return pickle.load(f)
     
-    def get_points(self, indices):
+    def get_points(self, indices, remove_points=False):
         g_X = self.X[indices]
         g_y = self.y[indices]
         g_ids = self.ids[indices]
         g_w = self.w[indices]
+
+        if remove_points:
+            self.remove_points(indices)
 
         return Dataset(g_X, g_y, g_ids, g_w)
 
