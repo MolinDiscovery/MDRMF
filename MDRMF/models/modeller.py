@@ -28,6 +28,7 @@ class Modeller:
         Initializes a Modeller object with the provided parameters.
         """        
         self.dataset = dataset.copy()
+        self.eval_dataset = dataset.copy()
         self.evaluator = evaluator
         self.iterations = iterations
         self.initial_sample_size = initial_sample_size
@@ -37,14 +38,14 @@ class Modeller:
         self.seeds = seeds
         self.results = {}
 
-    def _initial_sampler(self):
+    def _initial_sampler(self, initial_sample_size):
         """
         Randomly samples the initial points from the dataset.
 
         Returns:
             numpy.ndarray: Array of randomly selected points.
         """
-        random_points = self.dataset.get_samples(self.initial_sample_size, remove_points=True)
+        random_points = self.dataset.get_samples(initial_sample_size, remove_points=True)
 
         return random_points
 
@@ -108,7 +109,7 @@ class Modeller:
         """ 
         pass
     
-    def call_evaluator(self, i):
+    def call_evaluator(self, i, model_dataset):
         """
         Calls the evaluator to evaluate the model's performance and stores the results.
 
@@ -118,7 +119,7 @@ class Modeller:
         
         Notes: Should always be called when defining the fit() in a child model.
         """
-        results = self.evaluator.evaluate(self, self.dataset)
+        results = self.evaluator.evaluate(self, self.eval_dataset, model_dataset)
         print(f"Iteration {i+1}, Results: {results}")
 
         # Store results

@@ -50,17 +50,22 @@ class Dataset:
 
         return Dataset(g_X, g_y, g_ids, g_w)
 
-    def get_samples(self, n_samples, remove_points=False):
+    def get_samples(self, n_samples, remove_points=False, return_indices=False):
         random_indices = np.random.choice(len(self.X), size=n_samples, replace=False)
         g_X = self.X[random_indices]
         g_y = self.y[random_indices]
         g_ids = self.ids[random_indices]
         g_w = self.w[random_indices]
 
+        sampled_dataset = Dataset(g_X, g_y, g_ids, g_w)
+
         if remove_points:
             self.remove_points(random_indices)
-
-        return Dataset(g_X, g_y, g_ids, g_w)
+        
+        if return_indices:
+            return sampled_dataset, random_indices
+        else:
+            return sampled_dataset
 
     def set_points(self, indices):
         self.X = self.X[indices]

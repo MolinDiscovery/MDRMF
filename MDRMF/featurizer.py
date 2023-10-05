@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, MACCSkeys
 from rdkit.Chem.rdMolDescriptors import GetMorganFingerprintAsBitVect
 from rdkit.Chem.Fingerprints import FingerprintMols
 from rdkit import DataStructs
@@ -41,6 +41,8 @@ class Featurizer:
         elif method == 'topological':
             features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(FingerprintMols.FingerprintMol(mol, **kwargs))))
             # self.df['features'] = self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(FingerprintMols.FingerprintMol(mol, **kwargs)))
+        elif method == 'MACCS':
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(MACCSkeys.GenMACCSKeys(mol))))
         else:
             raise ValueError(f"Unsupported featurization method: {method}")
 

@@ -1,6 +1,7 @@
 import logging
 import pickle
 import os
+import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from MDRMF.models.modeller import Modeller
 from MDRMF.dataset import Dataset
@@ -9,7 +10,7 @@ class RFModeller(Modeller):
 
     def __init__(
         self, 
-        dataset, 
+        dataset,
         evaluator=None, 
         iterations=10, 
         initial_sample_size=10, 
@@ -21,7 +22,7 @@ class RFModeller(Modeller):
 
         super().__init__(
             dataset, 
-            evaluator, 
+            evaluator,
             iterations, 
             initial_sample_size, 
             acquisition_size, 
@@ -34,22 +35,21 @@ class RFModeller(Modeller):
         self.model = RandomForestRegressor(**self.kwargs)
 
     def fit(self):
-        
-        # Get random points
-        if self.seeds == []:
-            initial_pts = self._initial_sampler()
-        
-        # If freeze_sample is not empty and it's a list of integers use this as starting points
-        elif self.seeds and isinstance(self.seeds, list) and all(isinstance(i, int) for i in self.seeds):
-
-            # Get the seeded points and remember to remove them from the dataset
+        if self.seeds is None or len(self.seeds) == 0:
+            initial_pts = self._initial_sampler(initial_sample_size=self.initial_sample_size)
+        elif isinstance(self.seeds, (list, np.ndarray)) and all(isinstance(i, int) for i in self.seeds):
+            self.seeds = list(self.seeds)  # Ensure seeds is a list
             initial_pts = self.dataset.get_points(self.seeds, remove_points=True)
-
         else:
-            logging.error("Seeds failed. Seeds must be a list of integers like [5, 25, 600, 5000]")
+            logging.error("Invalid seeds. Must be a list or ndarray of integers, or None.")
+            return
         
         print(f"y values of starting points {initial_pts.y}")
-        self.model.fit(initial_pts.X, initial_pts.y)
+        self.model.fit(initial_pts.X, initial_pts.y)        
+        
+        # First evaluation, using only the initial points
+        if self.evaluator is not None:
+            self.call_evaluator(i=-1, model_dataset=initial_pts) # -1 because ´call_evaluator´ starts at 1, and this iteration should be 0.
 
         for i in range(self.iterations):
         # Acquire new points
@@ -70,7 +70,7 @@ class RFModeller(Modeller):
                 self.model.fit(model_dataset.X, model_dataset.y)
 
             if self.evaluator is not None:
-                self.call_evaluator(i=i)
+                self.call_evaluator(i=i, model_dataset=model_dataset)
 
         return self.model
     

@@ -1,66 +1,70 @@
 - Protocol_name: test protocol # Use this to define a unique protocol name, if not defined it defaults to 'protocol'
 
+- uniform_initial_sample: 3
+- save_models: False
+- save_datasets: False
+
 - Experiment:
     name: Exp01
-    replicate: 5
+    replicate: 3
 
     data:
-      datafile: 10K.csv
-      SMILES_col: SMILES
-      scores_col: r_i_docking_score
-      ids_col: SMILES
+        datafile: 10K.csv
+        SMILES_col: SMILES
+        scores_col: r_i_docking_score
+        ids_col: SMILES
 
     featurizer:
-      name: morgan
-      radius: 2
-      nBits: 512
-      # We can put any params from the underlying featurizer for example
-      # nBits and radius from RDkit when making morgan fingerprints
+        name: morgan
+        radius: 2
+        nBits: 512
+        # We can put any params from the underlying featurizer for example
+        # nBits and radius from RDkit when making morgan fingerprints
 
     model:
-      name: RFModeller # This has to match the class name of the model you wants to use.
-      iterations: 10
-      initial_sample_size: 30
-      acquisition_size: 30
-      acquisition_method: greedy
-      seeds: [5, 10, 15, 50, 100, 5000]
-      # We can put any params from the underlying model for example
-      # n_estimators: 50 for the `RFModeller` which is using scikit-backend
-      # We can also leave out all parameters alltogether to apply the default params. We do have to specify what model to use though.
+        name: RFModeller # This has to match the class name of the model you wants to use.
+        iterations: 5
+        initial_sample_size: 5
+        acquisition_size: 5
+        acquisition_method: greedy
+        # seeds: [5, 10, 15, 50, 100, 5000]
+        # We can put any params from the underlying model for example
+        # n_estimators: 50 for the `RFModeller` which is using scikit-backend
+        # We can also leave out all parameters alltogether to apply the default params. We do have to specify what model to use though.
 
     metrics: 
-      names: [top-k]
-      k: [100]
+        names: [top-k, top-k-acquired]
+        k: [100]
 
 # Notice how you can use a pre-featurized dataset.
 - Experiment:
     name: Exp02
-    replicate: 5
+    replicate: 1
     parallelize: False
 
     dataset: dataset.pkl
 
     model:
-      name: RFModeller
-      iterations: 10
-      initial_sample_size: 20
-      acquisition_size: 20
-      acquisition_method: random
+        name: RFModeller
+        iterations: 5
+        initial_sample_size: 5
+        acquisition_size: 5
+        acquisition_method: random
 
     # You can make lists of the things you want to evaluate on the models. The output will be in the results files.
     metrics: 
-      names: [top-k, R2_k]
-      k: [100, 50]
+        names: [top-k, top-k-acquired]
+        k: [100]
 
 
 # Not implemented yet, but will be used to just create a featurized dataset for later use.
-- Dataset:
-    name: dataset01
+# - Dataset:
+#     name: dataset01
 
-    featurizer:
-      name: morgan
-      nBits: 256
-      radius: 2
+#     featurizer:
+#       name: morgan
+#       nBits: 256
+#       radius: 2
 
 # To run an experiment after `pip install MDRMF` do this in your command prompt.
 # python -m MDRMF.experimenter config-file.yaml

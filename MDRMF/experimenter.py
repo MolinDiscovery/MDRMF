@@ -1,3 +1,4 @@
+from random import uniform
 import yaml
 import os
 import pandas as pd
@@ -13,10 +14,12 @@ from MDRMF import Dataset, MoleculeLoader, Featurizer, Model
 class Experimenter:
 
     def __init__(self, config_file: str):
-        #self.config_file = config_file
 
         self.config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), config_file)
         self.experiments = self._load_config()
+        self.uniform_initial_sample = self.get_config_value(['uniform_initial_sample']) or None
+        self.save_models = self.get_config_value(['save_models']) or False # Don't save models by default.
+        self.save_datasets = self.get_config_value(['save_datasets']) or False # Don't save datasets by default.
 
         # Generate ids
         self.protocol_name = self.get_protocol_name()
@@ -62,19 +65,104 @@ class Experimenter:
         with open(meta_destination, "w") as f:
             f.write(self.root_dir)
     
-    def conduct_all_experiments(self):
+    def get_config_value(self, keys: List[str]):
+        """
+        This method iterates over the list of experiments to find the 
+        specified key and its sub-keys, and returns the associated value.
+        
+        The method navigates through any number of sub-levels to access 
+        the value of the deepest sub-key.
+        
+        If the specified key or any of the sub-keys are not found within 
+        the experiments, the method returns None.
+        
+        Parameters:
+            keys (List[str]): A list where the first item is the top-level 
+                            key and each subsequent item is a sub-key 
+                            at the next level down.
+        
+        Returns:
+            The value associated with the deepest sub-key if present, 
+            otherwise None.
+        
+        Example:
+            If the YAML file contains:
+                - top-key:
+                    sub-key: 10
+                
+            Then calling get_config_value(['top-key', 'sub-key']) will return 10.
+        """
+        for config in self.experiments:
+            for entry in config:
+                value = entry  # starting point is the dictionary itself
+                for key in keys:
+                    if isinstance(value, dict) and key in value:
+                        value = value[key]
+                    else:
+                        break  # if key is not in the dict, break out of the loop
+                else:
+                    # if the for loop didn't break, the deepest value was found
+                    return value
+        return None
 
+    def _get_or_create_dataset(self, exp_config: dict):
+        if 'dataset' in exp_config:
+            dataset_file = exp_config['dataset']
+            return Dataset.load(dataset_file)
+        elif 'data' in exp_config:
+            data_conf = exp_config['data']
+            datafile = data_conf['datafile']
+            SMILES = data_conf['SMILES_col']
+            scores = data_conf['scores_col']
+            ids = data_conf['ids_col']
+            
+            data = MoleculeLoader(datafile, SMILES, scores).df
+            
+            # Featurize
+            feat = Featurizer(data)
+            feat_config = exp_config.get('featurizer', {})
+            feat_type = feat_config.get('name', '')
+            feat_params = feat_config.copy()
+            del feat_params['name']
+            
+            features = feat.featurize(feat_type, **feat_params)
+            
+            # Get data
+            X = features
+            y = data[scores]
+            ids_data = data[ids]
+            
+            # Make datasets
+            dataset_model = Dataset(X=X, y=y, ids=ids_data)
+            return dataset_model
+        else:
+            return None
+
+    def conduct_all_experiments(self):
         start_time = time.time()
- 
+
+        uniform_samples = None
+        uniform_indices = None
+
+        # if user inputs a uniform_initial_sample use this to 'seed' the model.
+        if self.uniform_initial_sample is not None:
+            # Assuming the first experiment configuration is representative for the initial uniform sample
+            first_experiment_config = next((exp.get('Experiment', {}) for exp in self.experiments[0] if 'Experiment' in exp), {})
+            dataset_model = self._get_or_create_dataset(first_experiment_config)
+            if dataset_model:
+                uniform_samples, uniform_indices = dataset_model.get_samples(self.uniform_initial_sample, remove_points=False, return_indices=True)
+                print("Uniform Indices:", uniform_indices)
+                uniform_indices = uniform_indices.tolist()
+            
         for config in self.experiments:
             for experiment in config:
                 key, value = list(experiment.items())[0]
                 if key == 'Experiment':
-                    self.conduct_experiment(value)
-                if key == 'Dataset':
+                    self.conduct_experiment(value, uniform_indices)
+                elif key == 'Dataset':
                     # Call self.make_dataset(value)
                     pass
-                if key == 'Parallelize_experiments':
+                elif key == 'Parallelize_experiments':
                     # add code here to handle 'Parallelize_experiments' cases
                     pass
 
@@ -98,57 +186,24 @@ class Experimenter:
         print("Lab time over. All experiments conducted. Look for the results folder.")
         print("Time elapsed: ", _format_time(elapsed_time))
     
-    def conduct_experiment(self, exp_config: dict):
-
-        # --- Data setup --- #
-        # If there is a dataset use this
-        if 'dataset' in exp_config:
-            dataset_file = exp_config['dataset']
-            dataset_model = Dataset.load(dataset_file)
-        elif 'data' in exp_config:
-            # Load data
-            data_conf = exp_config['data']
-
-            datafile = data_conf['datafile']
-            SMILES = data_conf['SMILES_col']
-            scores = data_conf['scores_col']
-            ids = data_conf['ids_col']
-
-            data = MoleculeLoader(datafile, SMILES, scores).df
-
-            # Featurize
-            feat = Featurizer(data)
-            feat_config = exp_config['featurizer']
-
-            feat_type = feat_config['name']
-            feat_params = feat_config.copy()
-            del feat_params['name']
-
-            features = feat.featurize(feat_type, **feat_params)
-
-            # Get data
-            X = features
-            y = data[scores]
-            ids_data = data[ids]
-
-            # Make datasets
-            dataset_model = Dataset(X=X, y=y, ids=ids_data)
-
-            # Save the dataset
-            dataset_model.save("dataset_" + exp_config['name']+".pkl")
+    def conduct_experiment(self, exp_config: dict, uniform_indices=None):
+        dataset_model = self._get_or_create_dataset(exp_config)
+        if not dataset_model:
+            raise ValueError("Unable to create or load a dataset model.")
 
         # --- Directory setup --- #
-        # Create main directory
         experiment_directory = os.path.join(self.root_dir, exp_config['name'])
         os.makedirs(experiment_directory, exist_ok=True)
-
+        
         # Save dataset
-        dataset_file = os.path.join(experiment_directory, "dataset.pkl")
-        dataset_model.save(dataset_file)
+        if self.save_datasets is True:
+            dataset_file = os.path.join(experiment_directory, "dataset.pkl")
+            dataset_model.save(dataset_file)
 
         # Create models directory
-        models_directory = os.path.join(experiment_directory, "models")
-        os.makedirs(models_directory, exist_ok=True)
+        if self.save_models is True:
+            models_directory = os.path.join(experiment_directory, "models")
+            os.makedirs(models_directory, exist_ok=True)
         
         # --- Model setup --- #
         model_config = exp_config['model']
@@ -177,15 +232,19 @@ class Experimenter:
         # --- Conduct replicate experiments and save results --- #
         for i in range(exp_config['replicate']):
             print(f"Running Experiment {exp_config['name']} replicate {i+1}")
+            
+            # get a fresh copy of dataset_model for each replicate
+            dataset_model_replicate = dataset_model.copy()
 
             # Setup model
-            model_input = model_class(dataset_model, evaluator=evaluator, **model_params)
+            model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
             model = Model(model=model_input)
-            model.train()
+            model.train()               
             
             # Save model
-            model_file = os.path.join(models_directory, f"{model_name} Exp{i+1}.pkl")
-            model.save(model_file)
+            if self.save_models is True:
+                model_file = os.path.join(models_directory, f"{model_name} Exp{i+1}.pkl")
+                model.save(model_file)
 
             # Add results to list
             results = model.results
@@ -197,7 +256,6 @@ class Experimenter:
         # Convert results to a DataFrame 
         results_df = pd.DataFrame(results_list)
         results_df.to_csv(os.path.join(experiment_directory, "results.csv"), index=False)
-
 
 if __name__ == "__main__":
     import argparse
