@@ -1,17 +1,15 @@
-# featurizer.py
-
 import pandas as pd
 import numpy as np
 from typing import Optional
 from rdkit import Chem
 from rdkit.Chem import AllChem, MACCSkeys, Descriptors
-from rdkit.Chem import rdMolDescriptors
+from rdkit.Chem.rdMolDescriptors import GetMorganFingerprintAsBitVect
 from rdkit.Chem.Fingerprints import FingerprintMols
 from rdkit import DataStructs
 from rdkit.Avalon import pyAvalonTools as avalon
 from rdkit.Chem.Pharm2D import Gobbi_Pharm2D, Generate
 from rdkit.ML.Descriptors import MoleculeDescriptors
-        
+
 class Featurizer:
     """
     A class to featurize molecules in a DataFrame.
@@ -34,67 +32,41 @@ class Featurizer:
         Featurizes the molecules in the DataFrame using the specified method and stores the features separately.
 
         Args:
-            method (str): The featurization method to use.
+            method (str): The featurization method to use. Supported methods are 'morgan' and 'topological'.
             **kwargs: Additional keyword arguments to pass to the featurization method.
         """
         print("Computing features...")
 
-        # Dictionary mapping method names to corresponding functions
-        method_funcs = {
-            'morgan': AllChem.GetMorganFingerprintAsBitVect,
-            'topological': FingerprintMols.FingerprintMol,
-            'MACCS': MACCSkeys.GenMACCSKeys,
-            'avalon': avalon.GetAvalonFP,
-            'rdk': Chem.RDKFingerprint,
-            'pharmacophore': self._generate_pharmacophore_fingerprint,
-            'rdkit2D': self._generate_rdkit2D_fingerprint,
-            'mqn': self._generate_mqn_fingerprint,
-            # ... add other methods here ...
-        }
-
-        # Check if method is supported
-        if method not in method_funcs:
+        if method == 'morgan':
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(AllChem.GetMorganFingerprintAsBitVect(mol, **kwargs))))
+            
+        elif method == 'topological':
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(FingerprintMols.FingerprintMol(mol, **kwargs))))
+        elif method == 'MACCS':
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(MACCSkeys.GenMACCSKeys(mol, **kwargs))))
+        elif method == 'avalon':
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(avalon.GetAvalonFP(mol, **kwargs))))
+        elif method == 'rdk':
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(Chem.RDKFingerprint(mol, **kwargs))))
+        elif method == 'pharmacophore':
+            pharm_factory = Gobbi_Pharm2D.factory
+            features_gen = tuple(self.df[self.mol_col].apply(
+                lambda mol: self._convert_to_np_array(Generate.Gen2DFingerprint(mol, pharm_factory))))
+        # elif method == 'layered':
+        #     features_gen = tuple(self.df[self.mol_col].apply(lambda mol: self._convert_to_np_array(AllChem.RDKFingerprint(mol, **kwargs))))
+        elif method == 'mqn':
+            mqn_descriptors = MoleculeDescriptors.MolecularDescriptorCalculator([x[0] for x in Descriptors.MQNs])
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: mqn_descriptors.CalcDescriptors(mol)))
+        elif method == 'rdkit2D':
+            rdkit2D_descriptors = MoleculeDescriptors.MolecularDescriptorCalculator([x[0] for x in Descriptors.descList])
+            features_gen = tuple(self.df[self.mol_col].apply(lambda mol: rdkit2D_descriptors.CalcDescriptors(mol)))            
+        else:
             raise ValueError(f"Unsupported featurization method: {method}")
 
-        func = method_funcs[method]
-        features_gen = []
-        total_molecules = len(self.df)
+        self.features = np.vstack(features_gen)
 
-        for idx, mol in enumerate(self.df[self.mol_col]):
-            features_gen.append(self._convert_to_np_array(func(mol, **kwargs)))
-            self._print_progress_bar(idx+1, total_molecules)
-
-        self.features = np.vstack(tuple(features_gen))
-        print ("\nFeature computation completed.")
-        return self.features    
-
-    def _generate_pharmacophore_fingerprint(self, mol, **kwargs):
-        pharm_factory = Gobbi_Pharm2D.factory
-        return Generate.Gen2DFingerprint(mol, pharm_factory)
-    
-    def _generate_rdkit2D_fingerprint(self, mol, **kwargs):
-        rdkit2D_descriptors = MoleculeDescriptors.MolecularDescriptorCalculator([x[0] for x in Descriptors.descList])
-        return rdkit2D_descriptors.CalcDescriptors(mol)
-    
-    def _generate_mqn_fingerprint(self, mol, **kwargs):
-        return rdMolDescriptors.MQNs_(mol)
-
-    def _print_progress_bar(self, iteration, total, bar_length=50):
-        """
-        Print the progress bar.
-
-        Args:
-            iteration (int): current iteration.
-            total (int): total iterations.
-            bar_length (int): length of the progress bar.
-        """
-        progress = (iteration / total)
-        arrow = '-' * int(round(progress * bar_length) - 1) + '>'
-        spaces = ' ' * (bar_length - len(arrow))
-
-        # Format the progress bar string to include molecule count and total count
-        print(f"\rProgress: [{arrow + spaces}] {int(progress * 100)}% ({iteration}/{total})", end='')
-
+        print ("Feature compution completed.")
+        return self.features
 
     def _convert_to_np_array(self, data) -> np.ndarray:
         """
@@ -113,6 +85,21 @@ class Featurizer:
             np_array = np.array(data).reshape(1, -1)
         return np_array
 
+
+    # def _convert_to_np_array(self, bit_vect) -> np.ndarray:
+    #     """
+    #     Converts an RDKit explicit bit vector to a numpy array.
+
+    #     Args:
+    #         bit_vect: The bit vector to convert.
+
+    #     Returns:
+    #         np.ndarray: The converted numpy array.
+    #     """
+    #     np_array = np.zeros((1, bit_vect.GetNumBits()), dtype=np.int8)
+    #     DataStructs.ConvertToNumpyArray(bit_vect, np_array)
+    #     return np_array
+    
     def get_df(self):
         """
         Returns:

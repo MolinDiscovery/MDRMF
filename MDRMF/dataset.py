@@ -39,6 +39,9 @@ class Dataset:
         with open(filename, "rb") as f:
             return pickle.load(f)
     
+    def get_length(self):
+        return len(self.w)
+
     def get_points(self, indices, remove_points=False):
         g_X = self.X[indices]
         g_y = self.y[indices]

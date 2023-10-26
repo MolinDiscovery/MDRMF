@@ -37,16 +37,7 @@ class Evaluator:
         ids_acquired = set(model_dataset.ids)  # Retrieve unique ids from the internal model dataset.
         intersection_count = len(lowest_y_ids.intersection(ids_acquired))  # Count of common ids between lowest_y_ids and ids_acquired.
         
-        return intersection_count / n  # Return the proportion of top 'n' found in the model_dataset.
-    
-    # def top_n_in_model_set(self, n, model_dataset):
-    #     lowest_y_indices = np.argsort(self.dataset.y)[:n]  # Get indices of the 'n' lowest y values.
-    #     lowest_y_ids = self.dataset.ids[lowest_y_indices]  # Retrieve corresponding IDs from the dataset.
-    #     ids_acquired = model_dataset.ids  # Retrieve ids from the internal model dataset.
-    #     mols_of_top_n_found = np.mean(np.isin(ids_acquired, lowest_y_ids))
-    #     return mols_of_top_n_found
-
-    
+        return intersection_count / n  # Return the proportion of top 'n' found in the model_dataset.  
 
     def r2_model(self, model, model_dataset):
         '''

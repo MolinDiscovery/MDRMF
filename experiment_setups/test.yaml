@@ -3,6 +3,7 @@
 - uniform_initial_sample: 3
 - save_models: False
 - save_datasets: False
+- save_nothing: False
 
 - Experiment:
     name: Exp01

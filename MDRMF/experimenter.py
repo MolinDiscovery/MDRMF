@@ -1,4 +1,4 @@
-from random import uniform
+import numpy as np
 import yaml
 import os
 import pandas as pd
@@ -20,6 +20,7 @@ class Experimenter:
         self.uniform_initial_sample = self.get_config_value(['uniform_initial_sample']) or None
         self.save_models = self.get_config_value(['save_models']) or False # Don't save models by default.
         self.save_datasets = self.get_config_value(['save_datasets']) or False # Don't save datasets by default.
+        self.save_nothing = self.get_config_value(['save_nothing']) or False # Save results by default, if True deletes all data after completion.
 
         # Generate ids
         self.protocol_name = self.get_protocol_name()
@@ -64,6 +65,18 @@ class Experimenter:
         meta_destination = os.path.join(self.root_dir, "meta_data.txt")
         with open(meta_destination, "w") as f:
             f.write(self.root_dir)
+
+    def cleanup(self):
+        """
+        Delete the entire root directory if save_nothing is True.
+        """
+        if hasattr(self, "save_nothing") and self.save_nothing is True:
+            try:
+                shutil.rmtree(self.root_dir)
+                print(f"Lab time over. Successfully deleted the directory: {self.root_dir}")
+                print("To change this behavior set ´- save_nothing: False´ or delete the line entirely.")
+            except Exception as e:
+                print(f"Error deleting the directory: {self.root_dir}. Error: {e}")
     
     def get_config_value(self, keys: List[str]):
         """
@@ -137,23 +150,39 @@ class Experimenter:
             return dataset_model
         else:
             return None
+        
+    def _calculate_uniform_indices(self, exp_config: dict, uniform_sample: int):
+        if 'dataset' in exp_config:
+            dataset_file = exp_config['dataset']
+            dataset = Dataset.load(dataset_file)
+            length = dataset.get_length()
+            random_indices = np.random.randint(0, length, uniform_sample).tolist()
+            return random_indices
+        elif 'data' in exp_config:
+            data_conf = exp_config['data']
+            datafile = data_conf['datafile']
+            SMILES = data_conf['SMILES_col']
+            scores = data_conf['scores_col']
+            ids = data_conf['ids_col']
+
+            data = MoleculeLoader(datafile, SMILES, scores).df
+            length = len(data)
+            random_indices = np.random.randint(0, length, uniform_sample).tolist()
+            return random_indices
 
     def conduct_all_experiments(self):
         start_time = time.time()
 
-        uniform_samples = None
         uniform_indices = None
 
         # if user inputs a uniform_initial_sample use this to 'seed' the model.
         if self.uniform_initial_sample is not None:
             # Assuming the first experiment configuration is representative for the initial uniform sample
             first_experiment_config = next((exp.get('Experiment', {}) for exp in self.experiments[0] if 'Experiment' in exp), {})
-            dataset_model = self._get_or_create_dataset(first_experiment_config)
-            if dataset_model:
-                uniform_samples, uniform_indices = dataset_model.get_samples(self.uniform_initial_sample, remove_points=False, return_indices=True)
-                print("Uniform Indices:", uniform_indices)
-                uniform_indices = uniform_indices.tolist()
             
+            uniform_indices = self._calculate_uniform_indices(first_experiment_config, self.uniform_initial_sample)
+            print("Uniform Indices:", uniform_indices)
+
         for config in self.experiments:
             for experiment in config:
                 key, value = list(experiment.items())[0]
@@ -183,7 +212,11 @@ class Experimenter:
         end_time = time.time()
         elapsed_time = end_time - start_time
 
-        print("Lab time over. All experiments conducted. Look for the results folder.")
+        if hasattr(self, "save_nothing") and self.save_nothing is True:
+            self.cleanup()
+        else:
+            print("Lab time over. All experiments conducted. Look for the results folder.")
+
         print("Time elapsed: ", _format_time(elapsed_time))
     
     def conduct_experiment(self, exp_config: dict, uniform_indices=None):
@@ -237,7 +270,10 @@ class Experimenter:
             dataset_model_replicate = dataset_model.copy()
 
             # Setup model
-            model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
+            if uniform_indices is not None:
+                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
+            else:
+                model_input = model_class(dataset_model_replicate, evaluator=evaluator, **model_params)
             model = Model(model=model_input)
             model.train()               
             
