@@ -7,3 +7,6 @@ build
 
 # Different files
 updatepypi.txt
+
+# Different folders
+/datasets/
