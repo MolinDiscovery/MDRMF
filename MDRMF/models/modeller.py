@@ -38,6 +38,8 @@ class Modeller:
         self.seeds = seeds
         self.results = {}
 
+        print(len(self.dataset.X[0]))
+
     def _initial_sampler(self, initial_sample_size):
         """
         Randomly samples the initial points from the dataset.

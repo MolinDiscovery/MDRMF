@@ -45,7 +45,7 @@ class DecisionTreeRegModeller(Modeller):
             return
         
         print(f"y values of starting points {initial_pts.y}")
-        self.model.fit(initial_pts.X, initial_pts.y)        
+        self.model.fit(initial_pts.X, initial_pts.y)      
         
         # First evaluation, using only the initial points
         if self.evaluator is not None:
