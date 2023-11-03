@@ -27,8 +27,6 @@ class Evaluator:
 
     def top_n_correct(self, n, model):
 
-        print(f"In eval: {len(self.dataset.X[0])}")
-
         model_predictions = model.predict(self.dataset) # Predict on the full dataset
         preds_indices = np.argsort(model_predictions)[:n] # Sort all predictions from lowest to highest and gets the indices of n amount of mols
         top_n_real_indices = np.argsort(self.dataset.y)[:n] # Get the indices of the n "real" mols and sorts them from lowest to highest

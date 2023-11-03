@@ -1,0 +1,40 @@
+- Protocol_name: 01_CDDD
+
+- uniform_initial_sample: 10
+- save_models: False
+- save_datasets: False
+- save_nothing: True
+
+- Experiment:
+    name: 01_RF
+    replicate: 1
+
+    dataset: datasets/dataset_CDDD.pkl
+
+    model:
+      name: RFModeller
+      iterations: 5
+      initial_sample_size: 10
+      acquisition_size: 10
+      acquisition_method: greedy
+
+    metrics: 
+      names: [top-k, top-k-acquired]
+      k: [100]
+
+# - Experiment:
+#     name: 02_NN
+#     replicate: 1
+
+#     dataset: datasets/dataset_CDDD.pkl
+
+#     model:
+#       name: DecisionTreeRegModeller
+#       iterations: 50
+#       initial_sample_size: 10
+#       acquisition_size: 10
+#       acquisition_method: greedy
+
+#     metrics: 
+#       names: [top-k, top-k-acquired]
+#       k: [100]      

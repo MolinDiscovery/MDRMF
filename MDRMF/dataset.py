@@ -7,24 +7,37 @@ class Dataset:
 
     def __init__(self, X, y, ids=None, w=None) -> None:
         
-        n_samples = np.shape(X)[0]
+        # Convert inputs to NumPy arrays
+        X = np.asarray(X)
+        y = np.asarray(y)
+        ids = np.arange(len(X)) if ids is None else np.asarray(ids, dtype=object)
+        w = np.ones(len(X), dtype=np.float32) if w is None else np.asarray(w)
 
-        if w is None:
-            if len(y.shape) == 1:
-                w = np.ones(y.shape[0], np.float32)
-            else:
-                w = np.ones((y.shape[0], 1), np.float32)
+        # Check if X needs stacking
+        if X.ndim == 1 and isinstance(X[0], (np.ndarray, list)):
+            try:
+                X = np.stack(X)
+            except ValueError as e:
+                raise ValueError("X should be a 2D array-like structure with consistent inner dimensions.") from e
 
-        if ids is None:
-            ids = np.arange(n_samples)
+        # n_samples = np.shape(X)[0]
 
-        self.X = np.asarray(X)
-        self.y = np.asarray(y)
-        self.ids = np.array(ids, dtype=object)
-        self.w = np.asarray(w)
+        # if w is None:
+        #     if len(y.shape) == 1:
+        #         w = np.ones(y.shape[0], np.float32)
+        #     else:
+        #         w = np.ones((y.shape[0], 1), np.float32)
 
-        # Check consistency of input data
-        if not all(len(data) == n_samples for data in [self.X, self.y, self.ids, self.w]):
+        # if ids is None:
+        #     ids = np.arange(n_samples)
+
+        self.X = X
+        self.y = y
+        self.ids = ids
+        self.w = w
+
+        # Validate the input data
+        if not all(len(data) == len(self.X) for data in [self.y, self.ids, self.w]):
             raise ValueError("Inconsistent input data: all input data should have the same number of samples.")
 
     def __repr__(self):
