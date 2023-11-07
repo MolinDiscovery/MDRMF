@@ -11,3 +11,4 @@ updatepypi.txt
 # Different folders
 /datasets/
 /data_files/
+/data_cleaning/

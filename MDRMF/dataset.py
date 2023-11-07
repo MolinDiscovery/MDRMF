@@ -21,17 +21,6 @@ class Dataset:
             except ValueError as e:
                 raise ValueError("X should be a 2D array-like structure with consistent inner dimensions.") from e
 
-        # n_samples = np.shape(X)[0]
-
-        # if w is None:
-        #     if len(y.shape) == 1:
-        #         w = np.ones(y.shape[0], np.float32)
-        #     else:
-        #         w = np.ones((y.shape[0], 1), np.float32)
-
-        # if ids is None:
-        #     ids = np.arange(n_samples)
-
         self.X = X
         self.y = y
         self.ids = ids
@@ -165,34 +154,69 @@ class Dataset:
         self.remove_points(invalid_indices)
 
 
+    # @staticmethod
+    # def remove_mismatched_ids(*datasets):
+    #     """
+    #     Compares multiple Dataset instances and removes entries with non-identical IDs across them.
+    #     Parameters:
+    #     *datasets : a variable number of Dataset instances to be compared.
+    #     Returns:
+    #     A tuple of Dataset instances with mismatched IDs removed.
+    #     """
+    #     # Find the intersection of IDs across all datasets using NumPy for efficiency
+    #     common_ids = datasets[0].ids
+    #     for dataset in datasets[1:]:
+    #         common_ids = np.intersect1d(common_ids, dataset.ids, assume_unique=True)
+
+    #     # Filter each dataset to only include entries with IDs in the intersection
+    #     filtered_datasets = []
+    #     for dataset in datasets:
+    #         indices_to_keep = np.isin(dataset.ids, common_ids)
+    #         filtered_dataset = Dataset(
+    #             X=np.ascontiguousarray(dataset.X[indices_to_keep]),
+    #             y=np.ascontiguousarray(dataset.y[indices_to_keep]),
+    #             ids=np.ascontiguousarray(dataset.ids[indices_to_keep]),
+    #             w=np.ascontiguousarray(dataset.w[indices_to_keep])
+    #         )
+    #         filtered_datasets.append(filtered_dataset)
+
+    #     return tuple(filtered_datasets)
+    
+    
     @staticmethod
     def remove_mismatched_ids(*datasets):
         """
-        Compares multiple Dataset instances and removes entries with non-identical IDs across them.
+        Efficiently compares multiple Dataset instances and removes entries with non-identical IDs across them.
         Parameters:
         *datasets : a variable number of Dataset instances to be compared.
         Returns:
         A tuple of Dataset instances with mismatched IDs removed.
         """
-        # Find the intersection of IDs across all datasets using NumPy for efficiency
-        common_ids = datasets[0].ids
-        for dataset in datasets[1:]:
-            common_ids = np.intersect1d(common_ids, dataset.ids, assume_unique=True)
-
-        # Filter each dataset to only include entries with IDs in the intersection
+        # Create sets of IDs from each dataset for fast intersection
+        ids_sets = [set(dataset.ids) for dataset in datasets]
+        
+        # Find the common IDs by intersecting the sets
+        common_ids = set.intersection(*ids_sets)
+        
+        # Convert the common IDs back to a sorted NumPy array for indexing
+        common_ids = np.array(sorted(common_ids), dtype=datasets[0].ids.dtype)
+        
+        # Filter each dataset to only include entries with IDs in the common set
         filtered_datasets = []
         for dataset in datasets:
-            indices_to_keep = np.isin(dataset.ids, common_ids)
+            # Create a boolean index mask for the current dataset's IDs
+            mask = np.isin(dataset.ids, common_ids)
+            
+            # Filter the dataset using the boolean index mask
             filtered_dataset = Dataset(
-                X=np.ascontiguousarray(dataset.X[indices_to_keep]),
-                y=np.ascontiguousarray(dataset.y[indices_to_keep]),
-                ids=np.ascontiguousarray(dataset.ids[indices_to_keep]),
-                w=np.ascontiguousarray(dataset.w[indices_to_keep])
+                X=dataset.X[mask],
+                y=dataset.y[mask],
+                ids=dataset.ids[mask],
+                w=dataset.w[mask]
             )
             filtered_datasets.append(filtered_dataset)
 
-        return tuple(filtered_datasets)
-    
+        return tuple(filtered_datasets)    
 
     @staticmethod
     def check_ids_order(*datasets):
@@ -218,4 +242,27 @@ class Dataset:
                 return False  # Found a dataset with different ids or order
 
         # All datasets have the same ids in the same order
-        return True    
+        return True
+    
+
+    def check_mismatches(self, *datasets):
+        """
+        Efficiently compares multiple Dataset instances and identifies entries with non-identical IDs across them.
+        Parameters:
+        *datasets : a variable number of Dataset instances to be compared.
+        Returns:
+        A dictionary with the mismatched IDs for each dataset.
+        """
+        mismatches = {}
+        dataset_ids_sets = [set(dataset.ids) for dataset in datasets]  # Convert IDs to sets for O(1) lookups
+        all_ids_set = set().union(*dataset_ids_sets)  # Union of all IDs
+
+        # Loop over each dataset and compare against the union of all IDs
+        for i, dataset_ids in enumerate(dataset_ids_sets):
+            mismatched_ids = all_ids_set - dataset_ids  # Set difference to find mismatches
+
+            # Store only the mismatched IDs
+            mismatches[f"dataset_{i}"] = sorted(mismatched_ids)  # Sort for consistent ordering
+
+        return mismatches
+

@@ -40,6 +40,7 @@ class RFModeller(Modeller):
 
         if self.feature_importance_opt is not None:
             self.optimize_for_feature_importance(self.feature_importance_opt)
+            self.dataset = self.eval_dataset.copy() # this is a hot-fix solution
 
     def fit(self, iterations_in=None):
 
@@ -53,7 +54,10 @@ class RFModeller(Modeller):
             initial_pts = self._initial_sampler(initial_sample_size=self.initial_sample_size)
         elif isinstance(self.seeds, (list, np.ndarray)) and all(isinstance(i, int) for i in self.seeds):
             self.seeds = list(self.seeds)  # Ensure seeds is a list
-            initial_pts = self.dataset.get_points(self.seeds, remove_points=True)
+            if feat_opt == True:
+                initial_pts = self.dataset.get_points(self.seeds)
+            else:
+                initial_pts = self.dataset.get_points(self.seeds, remove_points=True)
         else:
             logging.error("Invalid seeds. Must be a list or ndarray of integers, or None.")
             return
@@ -184,12 +188,10 @@ class RFModeller(Modeller):
         # print(f"values of most important features: {important_feature_values}")
         
         print(f"Indices of most important features: {important_features} \n")
-   
 
         return important_features
 
         # --- Comments
-        # This function is not yet implemented.
         # There should be an argument to RFModeller called ´feature_importance_opt´.
         # This argument should take a dict.
         # dict = {
