@@ -6,6 +6,7 @@ import inspect
 import time
 import shutil
 import datetime
+import uuid
 from typing import List
 from MDRMF.evaluator import Evaluator
 import MDRMF.models as mfm
@@ -41,7 +42,9 @@ class Experimenter:
     def generate_id(self, protocol_name: str) -> str:
         current_time = datetime.datetime.now()
         formatted_time = current_time.strftime('%y%m%d-%H%M%S')  # YYMMDD-HHMMSS
-        id = f"{protocol_name}-{formatted_time}"
+        # Create a UUID and take the first 8 characters for a shorter hash
+        uuid_hash = str(uuid.uuid4())[:8]
+        id = f"{protocol_name}-{formatted_time}-{uuid_hash}"
         return id
 
     def _load_config(self) -> List[dict]:

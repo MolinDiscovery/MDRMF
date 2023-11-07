@@ -3,6 +3,7 @@
 import numpy as np
 import pickle
 
+
 class Dataset:
 
     def __init__(self, X, y, ids=None, w=None) -> None:
@@ -39,6 +40,9 @@ class Dataset:
         # Validate the input data
         if not all(len(data) == len(self.X) for data in [self.y, self.ids, self.w]):
             raise ValueError("Inconsistent input data: all input data should have the same number of samples.")
+        
+        # Remove potential NaN values
+        self.remove_invalid_entries()
 
     def __repr__(self):
         return f"<Dataset X.shape: {self.X.shape}, y.shape: {self.y.shape}, w.shape: {self.w.shape}, ids: {self.ids}>"
@@ -140,6 +144,78 @@ class Dataset:
 
         return dataset
     
+
     def copy(self):
         import copy
         return copy.deepcopy(self)
+
+
+    def remove_invalid_entries(self):
+        """
+        Remove rows from the dataset where either X or y contains NaNs.
+        """
+        # Find indices where X or y contains NaNs
+        invalid_indices_x = np.where(np.isnan(self.X).any(axis=1))[0]
+        invalid_indices_y = np.where(np.isnan(self.y))[0]
+
+        # Combine the indices and remove duplicates
+        invalid_indices = np.unique(np.concatenate((invalid_indices_x, invalid_indices_y)))
+
+        # Remove these points from the dataset using the existing method
+        self.remove_points(invalid_indices)
+
+
+    @staticmethod
+    def remove_mismatched_ids(*datasets):
+        """
+        Compares multiple Dataset instances and removes entries with non-identical IDs across them.
+        Parameters:
+        *datasets : a variable number of Dataset instances to be compared.
+        Returns:
+        A tuple of Dataset instances with mismatched IDs removed.
+        """
+        # Find the intersection of IDs across all datasets using NumPy for efficiency
+        common_ids = datasets[0].ids
+        for dataset in datasets[1:]:
+            common_ids = np.intersect1d(common_ids, dataset.ids, assume_unique=True)
+
+        # Filter each dataset to only include entries with IDs in the intersection
+        filtered_datasets = []
+        for dataset in datasets:
+            indices_to_keep = np.isin(dataset.ids, common_ids)
+            filtered_dataset = Dataset(
+                X=np.ascontiguousarray(dataset.X[indices_to_keep]),
+                y=np.ascontiguousarray(dataset.y[indices_to_keep]),
+                ids=np.ascontiguousarray(dataset.ids[indices_to_keep]),
+                w=np.ascontiguousarray(dataset.w[indices_to_keep])
+            )
+            filtered_datasets.append(filtered_dataset)
+
+        return tuple(filtered_datasets)
+    
+
+    @staticmethod
+    def check_ids_order(*datasets):
+        """
+        Checks if all provided datasets have the same ids in the same order.
+
+        Parameters:
+        *datasets : a variable number of Dataset instances to be compared.
+
+        Returns:
+        bool: True if all ids match and are in the same order, False otherwise.
+        """
+        # We can skip the check if there's only one or no datasets
+        if len(datasets) < 2:
+            return True
+
+        # Use the ids of the first dataset as the reference
+        reference_ids = datasets[0].ids
+
+        # Check each subsequent dataset against the reference
+        for dataset in datasets[1:]:
+            if not np.array_equal(reference_ids, dataset.ids):
+                return False  # Found a dataset with different ids or order
+
+        # All datasets have the same ids in the same order
+        return True    
