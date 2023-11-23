@@ -13,11 +13,11 @@
 
     model:
       name: MLPRModeller
-      iterations: 5
+      iterations: 10
       initial_sample_size: 10
-      acquisition_size: 20
+      acquisition_size: 260
       acquisition_method: greedy
-      seeds: [3595, 1078, 3166, 111, 2078, 27585, 8405, 110669, 26389, 115519]
+      seeds: [4004, 1951, 1108, 2217, 168, 102092, 70131, 22004, 2660, 12914]
 
     metrics: 
       names: [top-k, top-k-acquired]
@@ -32,11 +32,11 @@
 
     model:
       name: RFModeller
-      iterations: 5
+      iterations: 10
       initial_sample_size: 10
-      acquisition_size: 20
+      acquisition_size: 260
       acquisition_method: greedy
-      seeds: [3595, 1078, 3166, 111, 2078, 27585, 8405, 110669, 26389, 115519]
+      seeds: [4004, 1951, 1108, 2217, 168, 102092, 70131, 22004, 2660, 12914]
 
     metrics: 
       names: [top-k, top-k-acquired]
@@ -51,12 +51,12 @@
 
     model:
       name: RFModeller
-      iterations: 5
+      iterations: 10
       initial_sample_size: 10
-      acquisition_size: 20
+      acquisition_size: 260
       acquisition_method: greedy
       feature_importance_opt: {'iterations': 5, 'features_limit': 300}
-      seeds: [3595, 1078, 3166, 111, 2078, 27585, 8405, 110669, 26389, 115519]
+      seeds: [4004, 1951, 1108, 2217, 168, 102092, 70131, 22004, 2660, 12914]
 
     metrics: 
       names: [top-k, top-k-acquired]
@@ -71,12 +71,12 @@
 
     model:
       name: RFModeller
-      iterations: 5
+      iterations: 10
       initial_sample_size: 10
-      acquisition_size: 20
+      acquisition_size: 260
       acquisition_method: greedy
       feature_importance_opt: {'iterations': 5, 'features_limit': 120}
-      seeds: [3595, 1078, 3166, 111, 2078, 27585, 8405, 110669, 26389, 115519]
+      seeds: [4004, 1951, 1108, 2217, 168, 102092, 70131, 22004, 2660, 12914]
 
     metrics: 
       names: [top-k, top-k-acquired]
@@ -91,12 +91,12 @@
 
     model:
       name: MLPRModeller
-      iterations: 5
+      iterations: 10
       initial_sample_size: 10
-      acquisition_size: 20
+      acquisition_size: 260
       acquisition_method: greedy
       learning_rate_init: 0.01
-      seeds: [3595, 1078, 3166, 111, 2078, 27585, 8405, 110669, 26389, 115519]
+      seeds: [4004, 1951, 1108, 2217, 168, 102092, 70131, 22004, 2660, 12914]
 
     metrics: 
       names: [top-k, top-k-acquired]
@@ -111,11 +111,11 @@
 
     model:
       name: RFModeller
-      iterations: 5
+      iterations: 10
       initial_sample_size: 10
-      acquisition_size: 20
+      acquisition_size: 260
       acquisition_method: greedy
-      seeds: [3595, 1078, 3166, 111, 2078, 27585, 8405, 110669, 26389, 115519]
+      seeds: [4004, 1951, 1108, 2217, 168, 102092, 70131, 22004, 2660, 12914]
 
     metrics: 
       names: [top-k, top-k-acquired]
