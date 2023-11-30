@@ -1,0 +1,32 @@
+- Protocol_name: labelExp
+
+- save_nothing: True
+
+- labelExperiment:
+    name: 01_labelExp
+    
+    # Using the chosen acquisition function the top X amount molecules are found.
+    # If replicates is > 1 then the software will train and predict X times and print results
+    # If replicates is > 1 and 'top_candidates: True' then the software will make
+    # for example 10 trainings and predictions and count up which molecules was predicted the most.
+    # At this point this is just an experimental idea.
+    replicate:
+      n: 10
+      top_candidates: True
+
+    # It is possible to use either a featurizer and a ´SMILES_col: smiles_column_name´
+    # However, it is also to use a pre-computed vector if given the ´vector_col: vector_column_name´ keyword
+    # If given a SMILES_col a featurizer must be provided.
+    data:
+      datafile: DTP_data_labels_dummy_short.csv
+      SMILES_col: SMILES
+      scores_col: docking_score
+      ids_col: NSC
+
+    featurizer:
+      name: rdkit2D
+
+    model:
+      name: RFModeller
+      acquisition_size: 20
+      acquisition_method: greedy

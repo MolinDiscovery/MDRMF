@@ -33,11 +33,13 @@ class Experimenter:
     
         self.create_meta_data()
 
+
     def get_protocol_name(self) -> str:
         try:
             return self.experiments[0][0]['Protocol_name']
         except KeyError as exc:
             return "protocol"
+
 
     def generate_id(self, protocol_name: str) -> str:
         current_time = datetime.datetime.now()
@@ -46,6 +48,7 @@ class Experimenter:
         uuid_hash = str(uuid.uuid4())[:8]
         id = f"{protocol_name}-{formatted_time}-{uuid_hash}"
         return id
+
 
     def _load_config(self) -> List[dict]:
         with open(self.config_file, 'r') as stream:
@@ -60,7 +63,8 @@ class Experimenter:
             config = [config]
 
         return [config]
-    
+
+
     def create_meta_data(self):
         destination_file_path = os.path.join(self.root_dir, "settings.yaml")
         shutil.copy(self.config_file, destination_file_path)
@@ -68,6 +72,7 @@ class Experimenter:
         meta_destination = os.path.join(self.root_dir, "meta_data.txt")
         with open(meta_destination, "w") as f:
             f.write(self.root_dir)
+
 
     def cleanup(self):
         """
@@ -80,7 +85,8 @@ class Experimenter:
                 print("To change this behavior set ´- save_nothing: False´ or delete the line entirely.")
             except Exception as e:
                 print(f"Error deleting the directory: {self.root_dir}. Error: {e}")
-    
+
+
     def get_config_value(self, keys: List[str]):
         """
         This method iterates over the list of experiments to find the 
@@ -121,7 +127,8 @@ class Experimenter:
                     return value
         return None
 
-    def _get_or_create_dataset(self, exp_config: dict):
+
+    def _get_or_create_dataset(self, exp_config: dict, semi_labeled=False):
         if 'dataset' in exp_config:
             dataset_file = exp_config['dataset']
             return Dataset.load(dataset_file)
@@ -129,31 +136,47 @@ class Experimenter:
             data_conf = exp_config['data']
             datafile = data_conf['datafile']
             SMILES = data_conf['SMILES_col']
+            vector = data_conf['vector_col']
             scores = data_conf['scores_col']
             ids = data_conf['ids_col']
             
-            data = MoleculeLoader(datafile, SMILES, scores).df
+            if vector:
+                data = pd.read_csv(datafile)
+                X = data[vector]
+                y = data[scores]
+                ids_data = data[ids]
+            else:
+                data = MoleculeLoader(datafile, SMILES, scores).df
             
-            # Featurize
-            feat = Featurizer(data)
-            feat_config = exp_config.get('featurizer', {})
-            feat_type = feat_config.get('name', '')
-            feat_params = feat_config.copy()
-            del feat_params['name']
-            
-            features = feat.featurize(feat_type, **feat_params)
-            
-            # Get data
-            X = features
-            y = data[scores]
-            ids_data = data[ids]
+                # Featurize
+                feat = Featurizer(data)
+                feat_config = exp_config.get('featurizer', {})
+                feat_type = feat_config.get('name', '')
+                feat_params = feat_config.copy()
+                del feat_params['name']
+                
+                features = feat.featurize(feat_type, **feat_params)
+                
+                # Get data
+                X = features
+                y = data[scores]
+                ids_data = data[ids]
             
             # Make datasets
-            dataset_model = Dataset(X=X, y=y, ids=ids_data)
-            return dataset_model
+            if semi_labeled == True:
+                # When the arg ´semi_labeled´ is False, all NaN values is removed
+                # thus keeping only the labeled data.                
+                dataset_labeled = Dataset(X=X, y=y, ids=ids_data, keep_unlabeled_data_only=False)
+                # When it is True only 
+                dataset_unlabeled = Dataset(X=X, y=y, ids=ids_data, keep_unlabeled_data_only=True)
+                return dataset_labeled, dataset_unlabeled
+            else:
+                dataset_model = Dataset(X=X, y=y, ids=ids_data)
+                return dataset_model
         else:
             return None
-        
+
+
     def _calculate_uniform_indices(self, exp_config: dict, uniform_sample: int):
         if 'dataset' in exp_config:
             dataset_file = exp_config['dataset']
@@ -172,6 +195,7 @@ class Experimenter:
             length = len(data)
             random_indices = np.random.randint(0, length, uniform_sample).tolist()
             return random_indices
+
 
     def conduct_all_experiments(self):
         start_time = time.time()
@@ -194,9 +218,8 @@ class Experimenter:
                 elif key == 'Dataset':
                     # Call self.make_dataset(value)
                     pass
-                elif key == 'Parallelize_experiments':
-                    # add code here to handle 'Parallelize_experiments' cases
-                    pass
+                elif key == 'labelExperiment':
+                    self.conduct_labelExperiment(value)
 
         def _format_time(seconds):
 
@@ -278,7 +301,7 @@ class Experimenter:
             else:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, **model_params)
             model = Model(model=model_input)
-            model.train()               
+            model.train()
             
             # Save model
             if self.save_models is True:
@@ -295,6 +318,39 @@ class Experimenter:
         # Convert results to a DataFrame 
         results_df = pd.DataFrame(results_list)
         results_df.to_csv(os.path.join(experiment_directory, "results.csv"), index=False)
+
+
+    def conduct_labelExperiment(self, exp_config: dict):
+        dataset_labeled, dataset_unlabeled = self._get_or_create_dataset(exp_config, semi_labeled=True)
+
+        model_config = exp_config['model']
+        model_name = model_config['name']
+        model_params = model_config.copy()
+        del model_params['name']
+
+        model_class = None
+        for name, obj in inspect.getmembers(mfm):
+            if inspect.isclass(obj) and name == model_name:
+                model_class = obj
+                break
+
+        if model_class is None:
+            raise ValueError(f'Model {model_name} not found in MDRMF.models')
+        
+        length_labeled_data = dataset_labeled.y.shape[0]
+
+        model_input = model_class(
+            dataset_labeled,
+            iterations=0,
+            initial_sample_size=length_labeled_data,
+            **model_params
+            )
+        
+        model = Model(model=model_input)
+        model.train()
+        acquired_points = model.get_acquired_points(dataset_unlabeled)
+        print(acquired_points)
+        
 
 if __name__ == "__main__":
     import argparse

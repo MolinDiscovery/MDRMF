@@ -6,6 +6,7 @@ __version__ = '0.0.5'
 from .featurizer import Featurizer
 from .moleculeloader import MoleculeLoader
 from .dataset import Dataset
+from .datasetflagged import FlaggedDataset
 from .evaluator import Evaluator
 from .model import Model
 #from .experimenter import Experimenter

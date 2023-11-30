@@ -17,7 +17,7 @@ class RFModeller(Modeller):
         iterations=10, 
         initial_sample_size=10, 
         acquisition_size=10, 
-        acquisition_method="greedy", 
+        acquisition_method="greedy",
         retrain=True,
         seeds=[],
         feature_importance_opt=None,

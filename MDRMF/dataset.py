@@ -1,12 +1,13 @@
 # dataset.py
 
+from re import U
 import numpy as np
 import pickle
 
 
 class Dataset:
 
-    def __init__(self, X, y, ids=None, w=None) -> None:
+    def __init__(self, X, y, ids=None, w=None, keep_unlabeled_data_only=False) -> None:
         
         # Convert inputs to NumPy arrays
         X = np.asarray(X)
@@ -29,9 +30,16 @@ class Dataset:
         # Validate the input data
         if not all(len(data) == len(self.X) for data in [self.y, self.ids, self.w]):
             raise ValueError("Inconsistent input data: all input data should have the same number of samples.")
+
+        # Remove potential NaN values.         
+        if keep_unlabeled_data_only == False:
+            self.remove_invalid_entries()
+
+        # If the data is semi-labeled
+        # the unlabeled points should be preserved.
+        if keep_unlabeled_data_only == True:
+            self.keep_unlabel_entries_only()
         
-        # Remove potential NaN values
-        self.remove_invalid_entries()
 
     def __repr__(self):
         return f"<Dataset X.shape: {self.X.shape}, y.shape: {self.y.shape}, w.shape: {self.w.shape}, ids: {self.ids}>"
@@ -48,7 +56,24 @@ class Dataset:
     def get_length(self):
         return len(self.w)
 
-    def get_points(self, indices, remove_points=False):
+    def get_points(self, indices, remove_points=False, unlabeled=False):
+
+        '''
+        Retrieves specific points from the dataset based on the provided list of indices. 
+        This method can optionally remove these points from the dataset after retrieval.
+
+        Parameters:
+            indices (list): A list of indices specifying the data points to retrieve from the dataset.
+            remove_points (bool, optional): If set to True, the data points corresponding to the provided indices will be removed from the dataset. Defaults to False.
+            unlabeled (bool, optional): If set to True the retrieved dataset will not have NaN values removed.
+
+        Returns:
+            Dataset: A new Dataset object containing the data points specified by the indices. This dataset includes the features (`X`), labels/targets (`y`), identifiers (`ids`), and any additional weights (`w`) associated with these data points.
+
+        Note:
+            The removal of points from the dataset is an in-place operation. If `remove_points` is set to True, the original dataset will be modified.
+        '''
+
         g_X = self.X[indices]
         g_y = self.y[indices]
         g_ids = self.ids[indices]
@@ -57,16 +82,22 @@ class Dataset:
         if remove_points:
             self.remove_points(indices)
 
-        return Dataset(g_X, g_y, g_ids, g_w)
+        if unlabeled == True:
+            return Dataset(g_X, g_y, g_ids, g_w, keep_unlabeled_data_only=True)
+        else:
+            return Dataset(g_X, g_y, g_ids, g_w)
 
-    def get_samples(self, n_samples, remove_points=False, return_indices=False):
+    def get_samples(self, n_samples, remove_points=False, return_indices=False, unlabeled=False):
         random_indices = np.random.choice(len(self.X), size=n_samples, replace=False)
         g_X = self.X[random_indices]
         g_y = self.y[random_indices]
         g_ids = self.ids[random_indices]
         g_w = self.w[random_indices]
 
-        sampled_dataset = Dataset(g_X, g_y, g_ids, g_w)
+        if unlabeled == True:
+            sampled_dataset = Dataset(g_X, g_y, g_ids, g_w, keep_unlabeled_data_only=True)
+        else:
+            sampled_dataset = Dataset(g_X, g_y, g_ids, g_w)        
 
         if remove_points:
             self.remove_points(random_indices)
@@ -152,36 +183,18 @@ class Dataset:
 
         # Remove these points from the dataset using the existing method
         self.remove_points(invalid_indices)
-
-
-    # @staticmethod
-    # def remove_mismatched_ids(*datasets):
-    #     """
-    #     Compares multiple Dataset instances and removes entries with non-identical IDs across them.
-    #     Parameters:
-    #     *datasets : a variable number of Dataset instances to be compared.
-    #     Returns:
-    #     A tuple of Dataset instances with mismatched IDs removed.
-    #     """
-    #     # Find the intersection of IDs across all datasets using NumPy for efficiency
-    #     common_ids = datasets[0].ids
-    #     for dataset in datasets[1:]:
-    #         common_ids = np.intersect1d(common_ids, dataset.ids, assume_unique=True)
-
-    #     # Filter each dataset to only include entries with IDs in the intersection
-    #     filtered_datasets = []
-    #     for dataset in datasets:
-    #         indices_to_keep = np.isin(dataset.ids, common_ids)
-    #         filtered_dataset = Dataset(
-    #             X=np.ascontiguousarray(dataset.X[indices_to_keep]),
-    #             y=np.ascontiguousarray(dataset.y[indices_to_keep]),
-    #             ids=np.ascontiguousarray(dataset.ids[indices_to_keep]),
-    #             w=np.ascontiguousarray(dataset.w[indices_to_keep])
-    #         )
-    #         filtered_datasets.append(filtered_dataset)
-
-    #     return tuple(filtered_datasets)
     
+    
+    def keep_unlabel_entries_only(self):
+        '''
+        Keep only entries in the dataset where y is NaN
+        '''
+        unlabeled_data_indices = np.where(np.isnan(self.y))[0]
+
+        self.X = self.X[unlabeled_data_indices]
+        self.y = self.y[unlabeled_data_indices]
+        self.ids = self.ids[unlabeled_data_indices]
+        self.w = self.w[unlabeled_data_indices]
     
     @staticmethod
     def remove_mismatched_ids(*datasets):

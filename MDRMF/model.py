@@ -21,11 +21,13 @@ class Model:
         """
         self.model = model
 
+
     def train(self):
         """
         Trains the wrapped Modeller object.
         """
         self.model.fit()
+
 
     def predict(self, dataset: Dataset):
         """
@@ -39,6 +41,10 @@ class Model:
         """
         return self.model.predict(dataset)
 
+
+    def get_acquired_points(self, unlabeled_dataset):
+        return self.model.unlabeled_acquisition(self.model, unlabeled_dataset)
+
     @property
     def results(self):
         """
@@ -48,7 +54,8 @@ class Model:
             dict: A dictionary containing the results of the model's evaluations.
         """
         return self.model.results
-    
+
+
     def save(self, filename: str):
         """
         Save the wrapped Modeller object to a pickle file

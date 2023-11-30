@@ -38,7 +38,6 @@ class Modeller:
         self.seeds = seeds
         self.results = {}
 
-        print(len(self.dataset.X[0]))
 
     def _initial_sampler(self, initial_sample_size):
         """
@@ -50,6 +49,7 @@ class Modeller:
         random_points = self.dataset.get_samples(initial_sample_size, remove_points=True)
 
         return random_points
+
 
     def _acquisition(self, model):
         """
@@ -71,10 +71,7 @@ class Modeller:
             indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
 
             # Get the best docked molecules from the dataset
-            acq_dataset = self.dataset.get_points(indices)
-
-            # Remove these datapoints from the dataset
-            self.dataset.remove_points(indices)
+            acq_dataset = self.dataset.get_points(indices, remove_points=True)
 
         if self.acquisition_method == "random":
             
@@ -83,12 +80,43 @@ class Modeller:
 
         return acq_dataset
     
+    
+    def unlabeled_acquisition(self, model, dataset):
+        """
+        Performs the acquisition step to select new points for testing.
+
+        Parameters:
+            model: The model object used for acquisition.
+
+        Returns:
+            Dataset: The acquired dataset containing the selected points.
+        """
+        # Predict on the full dataset
+        preds = model.predict(dataset)
+
+        if self.acquisition_method == "greedy":
+
+            # Find indices of the x-number of smallest values
+            indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
+
+            # Get the best docked molecules from the dataset
+            acq_dataset = dataset.get_points(indices, remove_points=False, unlabeled=True)
+
+        if self.acquisition_method == "random":
+            
+            # Get random points
+            acq_dataset = dataset.get_samples(self.acquisition_size, remove_points=False, unlabeled=True)
+
+        return acq_dataset
+
+
     def fit(self):
         """
         Fits the model to the data.
         This method needs to be implemented in child classes.
         """        
         pass
+
 
     def predict():
         """
@@ -97,12 +125,14 @@ class Modeller:
         """        
         pass
 
+
     def save():
         """
         Save the model
         This method needs to be implemented in child classes.
         """         
         pass
+
 
     def load():
         """
@@ -111,6 +141,7 @@ class Modeller:
         """ 
         pass
     
+
     def call_evaluator(self, i, model_dataset):
         """
         Calls the evaluator to evaluate the model's performance and stores the results.
