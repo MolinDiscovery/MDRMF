@@ -43,18 +43,22 @@ class Dataset:
 
     def __repr__(self):
         return f"<Dataset X.shape: {self.X.shape}, y.shape: {self.y.shape}, w.shape: {self.w.shape}, ids: {self.ids}>"
-    
+
+
     def save(self, filename):
         with open(filename, "wb") as f:
             pickle.dump(self, f)
+
 
     @staticmethod
     def load(filename):
         with open(filename, "rb") as f:
             return pickle.load(f)
     
+
     def get_length(self):
         return len(self.w)
+
 
     def get_points(self, indices, remove_points=False, unlabeled=False):
 
@@ -87,6 +91,7 @@ class Dataset:
         else:
             return Dataset(g_X, g_y, g_ids, g_w)
 
+
     def get_samples(self, n_samples, remove_points=False, return_indices=False, unlabeled=False):
         random_indices = np.random.choice(len(self.X), size=n_samples, replace=False)
         g_X = self.X[random_indices]
@@ -107,11 +112,13 @@ class Dataset:
         else:
             return sampled_dataset
 
+
     def set_points(self, indices):
         self.X = self.X[indices]
         self.y = self.y[indices]
         self.ids = self.ids[indices]
         self.w = self.w[indices]
+
 
     def remove_points(self, indices):
         indices = np.sort(indices)[::-1] # remove indices from desending order
@@ -121,6 +128,7 @@ class Dataset:
         self.y = self.y[mask]
         self.ids = self.ids[mask]
         self.w = self.w[mask]
+
 
     def sort_by_y(self, ascending=True):
         sort_indices = np.argsort(self.y)
@@ -132,6 +140,7 @@ class Dataset:
         self.y = self.y[sort_indices]
         self.ids = self.ids[sort_indices]
         self.w = self.w[sort_indices]
+
 
     @staticmethod
     def merge_datasets(datasets):
@@ -155,6 +164,7 @@ class Dataset:
         # Return a new Dataset that combines the data from all the datasets
         return Dataset(X, y, ids, w)
     
+
     @staticmethod
     def missing_points(original_dataset, model_dataset):
         # compare the ids
@@ -279,3 +289,22 @@ class Dataset:
 
         return mismatches
 
+
+    def get_top_or_bottom(self, n, highest=False):
+        """
+        Retrieves the lowest or highest 'n' entries from the dataset based on 'y' values.
+
+        Parameters:
+        n (int): The number of entries to retrieve.
+        highest (bool): If True, retrieves the highest 'n' entries; otherwise, retrieves the lowest 'n' entries.
+
+        Returns:
+        Dataset: A new Dataset object containing the lowest or highest 'n' entries.
+        """
+        sorted_indices = np.argsort(self.y)
+        if highest:
+            selected_indices = sorted_indices[-n:]
+        else:
+            selected_indices = sorted_indices[:n]
+
+        return Dataset(self.X[selected_indices], self.y[selected_indices], self.ids[selected_indices], self.w[selected_indices])

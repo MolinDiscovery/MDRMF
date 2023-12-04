@@ -20,6 +20,8 @@
     data:
       datafile: DTP_data_labels_dummy_short.csv
       SMILES_col: SMILES
+      #datafile: data_files/DTP_CDDD_array_semi_labeled.csv
+      #vector_col: fingerprint_array
       scores_col: docking_score
       ids_col: NSC
 

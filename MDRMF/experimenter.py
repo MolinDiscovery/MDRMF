@@ -7,6 +7,7 @@ import time
 import shutil
 import datetime
 import uuid
+import json
 from typing import List
 from MDRMF.evaluator import Evaluator
 import MDRMF.models as mfm
@@ -135,13 +136,14 @@ class Experimenter:
         elif 'data' in exp_config:
             data_conf = exp_config['data']
             datafile = data_conf['datafile']
-            SMILES = data_conf['SMILES_col']
-            vector = data_conf['vector_col']
+            SMILES = data_conf.get('SMILES_col', None)
+            vector = data_conf.get('vector_col', None)
             scores = data_conf['scores_col']
             ids = data_conf['ids_col']
             
             if vector:
                 data = pd.read_csv(datafile)
+                data[vector] = data[vector].apply(json.loads) # deserialize json strings to lists
                 X = data[vector]
                 y = data[scores]
                 ids_data = data[ids]
@@ -195,6 +197,53 @@ class Experimenter:
             length = len(data)
             random_indices = np.random.randint(0, length, uniform_sample).tolist()
             return random_indices
+        
+    
+    def _calculate_unique_indices(self, exp_config: dict, unique_sample_size: int, nudging: list = None):
+
+        '''
+        Maybe I need to make the method return the ids and not the mere indices.
+        Doing the nudging like now where we just sort and return a indices
+        for the sorted data will also require the working dataset to be sorted,
+        which might not always be the case. Currently most datasets are sorted
+        by y though, but it can be a future problem.
+        '''
+        nudging = [5, 500] # sets nudging to look for 5 random molecules in the top-500 'best' molecules.
+        nudge_size = nudging[0]
+        nudge_top_n = nudging[1]
+
+        if 'dataset' in exp_config:
+            dataset_file = exp_config['dataset']
+            dataset = Dataset.load(dataset_file)
+            if nudging:
+                dataset = dataset.sort_by_y()
+                top_dataset = dataset.get_top_or_bottom(nudge_top_n)
+                _, random_top_indices = top_dataset.get_samples(nudge_size, return_indices=True)
+                n_non_top_indices = unique_sample_size-nudge_size
+                _, random_indices = dataset.get_samples(n_non_top_indices)
+                indices = random_top_indices + random_indices
+            else:
+                _, indices = dataset.get_samples(unique_sample_size)
+
+        elif 'data' in exp_config:
+            data_conf = exp_config['data']
+            datafile = data_conf['datafile']
+            SMILES = data_conf['SMILES_col']
+            scores = data_conf['scores_col']
+            ids = data_conf['ids_col']
+            data = MoleculeLoader(datafile, SMILES, scores).df
+            length = len(data)
+            if nudging:
+                data.sort_values(by=[scores])
+                top_data = data.iloc[:500]
+                random_top_indices = np.random.randint(0, len(top_data), unique_sample_size).tolist()
+                random_indices = np.random.randint(0, length, unique_sample_size).tolist()
+
+                indices = random_top_indices + random_indices
+            else:
+                indices = np.random.randint(0, length, unique_sample_size).tolist()
+
+        return indices
 
 
     def conduct_all_experiments(self):
