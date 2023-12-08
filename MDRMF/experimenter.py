@@ -20,6 +20,7 @@ class Experimenter:
         self.config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), config_file)
         self.experiments = self._load_config()
         self.uniform_initial_sample = self.get_config_value(['uniform_initial_sample']) or None
+        self.unique_initial_sample = self.get_config_value(['unique_initial_sample', 'sample_size']) or None
         self.save_models = self.get_config_value(['save_models']) or False # Don't save models by default.
         self.save_datasets = self.get_config_value(['save_datasets']) or False # Don't save datasets by default.
         self.save_nothing = self.get_config_value(['save_nothing']) or False # Save results by default, if True deletes all data after completion.
@@ -199,7 +200,7 @@ class Experimenter:
             return random_indices
         
     
-    def _calculate_unique_indices(self, exp_config: dict, unique_sample_size: int, nudging: list = None):
+    def _calculate_unique_indices(self, exp_config: dict, unique_sample_size: int, nudging: list = []):
 
         '''
         Maybe I need to make the method return the ids and not the mere indices.
@@ -208,20 +209,23 @@ class Experimenter:
         which might not always be the case. Currently most datasets are sorted
         by y though, but it can be a future problem.
         '''
-        nudging = [5, 500] # sets nudging to look for 5 random molecules in the top-500 'best' molecules.
+        
+        # divide the total number of unique samples in two to get
+        nudged_samples_size = int(unique_sample_size / 2)
+
         nudge_size = nudging[0]
         nudge_top_n = nudging[1]
 
         if 'dataset' in exp_config:
             dataset_file = exp_config['dataset']
             dataset = Dataset.load(dataset_file)
-            if nudging:
-                dataset = dataset.sort_by_y()
+            if nudging != []:
+                dataset.sort_by_y()
                 top_dataset = dataset.get_top_or_bottom(nudge_top_n)
                 _, random_top_indices = top_dataset.get_samples(nudge_size, return_indices=True)
                 n_non_top_indices = unique_sample_size-nudge_size
-                _, random_indices = dataset.get_samples(n_non_top_indices)
-                indices = random_top_indices + random_indices
+                _, random_indices = dataset.get_samples(n_non_top_indices, return_indices=True)
+                indices = np.concatenate([random_top_indices, random_indices])
             else:
                 _, indices = dataset.get_samples(unique_sample_size)
 
@@ -233,11 +237,11 @@ class Experimenter:
             ids = data_conf['ids_col']
             data = MoleculeLoader(datafile, SMILES, scores).df
             length = len(data)
-            if nudging:
+            if nudging != []:
                 data.sort_values(by=[scores])
-                top_data = data.iloc[:500]
-                random_top_indices = np.random.randint(0, len(top_data), unique_sample_size).tolist()
-                random_indices = np.random.randint(0, length, unique_sample_size).tolist()
+                top_data = data.iloc[:nudge_top_n]
+                random_top_indices = np.random.randint(0, len(top_data), nudged_samples_size).tolist()
+                random_indices = np.random.randint(0, length, nudged_samples_size).tolist()
 
                 indices = random_top_indices + random_indices
             else:
@@ -259,11 +263,44 @@ class Experimenter:
             uniform_indices = self._calculate_uniform_indices(first_experiment_config, self.uniform_initial_sample)
             print("Uniform Indices:", uniform_indices)
 
+
+        '''
+        Below code creates unique initial_samples. It uses the first experiment to retrieve how many replicates to create.
+        '''
+
+        if self.unique_initial_sample is not None:
+
+            first_experiment_config = next((exp.get('Experiment', {}) for exp in self.experiments[0] if 'Experiment' in exp), {})
+
+            nudge_value = self.get_config_value(['unique_initial_sample', 'nudging'])
+
+            if isinstance(nudge_value, list):
+                nudging = nudge_value
+            elif nudge_value == None:
+                pass
+            else:
+                ValueError('Problem reading nudge values. It must be a list consisting of how many samples to include\n'
+                           'and what top_n space to draw from. Like [5, 100]\n'
+                           'draws 5 random molecules from the top-100 best molecules.')
+
+            replicates_first_exp = first_experiment_config['replicate']
+
+            unique_indices_list = []
+
+            for i in range(replicates_first_exp):
+
+                unique_indices = self._calculate_unique_indices(first_experiment_config, self.unique_initial_sample, nudging)
+                unique_indices_list.append(unique_indices)
+
+        '''
+        End creating unique initial sample.
+        '''
+
         for config in self.experiments:
             for experiment in config:
                 key, value = list(experiment.items())[0]
                 if key == 'Experiment':
-                    self.conduct_experiment(value, uniform_indices)
+                    self.conduct_experiment(value, uniform_indices, unique_indices_list)
                 elif key == 'Dataset':
                     # Call self.make_dataset(value)
                     pass
@@ -294,7 +331,9 @@ class Experimenter:
 
         print("Time elapsed: ", _format_time(elapsed_time))
     
-    def conduct_experiment(self, exp_config: dict, uniform_indices=None):
+
+    def conduct_experiment(self, exp_config: dict, uniform_indices=None, unique_indices=None):
+
         dataset_model = self._get_or_create_dataset(exp_config)
         if not dataset_model:
             raise ValueError("Unable to create or load a dataset model.")
@@ -335,18 +374,27 @@ class Experimenter:
         k_values = model_metrics['k']
         evaluator = Evaluator(dataset_model, metrics, k_values)
 
+        # If unique indices are defiend use the length of the list to define how many replicates to do.
+        if unique_indices is not None:
+            replicates = len(unique_indices)
+        else:
+            replicates = exp_config['replicate'] # If replicates is not predefined get replicate from current experiment.
+
         results_list = []
 
         # --- Conduct replicate experiments and save results --- #
-        for i in range(exp_config['replicate']):
+        for i in range(replicates):
             print(f"Running Experiment {exp_config['name']} replicate {i+1}")
-            
+
             # get a fresh copy of dataset_model for each replicate
             dataset_model_replicate = dataset_model.copy()
 
             # Setup model
             if uniform_indices is not None:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
+            elif unique_indices is not None:
+                unique_seeds = unique_indices[i]
+                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=unique_seeds, **model_params)
             else:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, **model_params)
             model = Model(model=model_input)
