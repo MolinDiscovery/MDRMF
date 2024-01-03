@@ -1,3 +1,4 @@
+from enum import unique
 import numpy as np
 import yaml
 import os
@@ -210,11 +211,10 @@ class Experimenter:
         by y though, but it can be a future problem.
         '''
         
-        # divide the total number of unique samples in two to get
-        nudged_samples_size = int(unique_sample_size / 2)
-
-        nudge_size = nudging[0]
-        nudge_top_n = nudging[1]
+        if nudging != []:
+            nudged_samples_size = int(unique_sample_size / 2)
+            nudge_size = nudging[0]
+            nudge_top_n = nudging[1]
 
         if 'dataset' in exp_config:
             dataset_file = exp_config['dataset']
@@ -227,7 +227,7 @@ class Experimenter:
                 _, random_indices = dataset.get_samples(n_non_top_indices, return_indices=True)
                 indices = np.concatenate([random_top_indices, random_indices])
             else:
-                _, indices = dataset.get_samples(unique_sample_size)
+                _, indices = dataset.get_samples(unique_sample_size, return_indices=True)
 
         elif 'data' in exp_config:
             data_conf = exp_config['data']
@@ -268,27 +268,36 @@ class Experimenter:
         Below code creates unique initial_samples. It uses the first experiment to retrieve how many replicates to create.
         '''
 
+        # initialize unique_indices_list to None. If it is still None after the if-statement, it will not be used.
+        unique_indices_list = None
+
+        # if user inputs a unique_initial_sample use this to 'seed' the model.
         if self.unique_initial_sample is not None:
 
+            # Assuming the first experiment configuration is representative for the initial unique sample
             first_experiment_config = next((exp.get('Experiment', {}) for exp in self.experiments[0] if 'Experiment' in exp), {})
 
+            # Get the nudge values if they are defined.
             nudge_value = self.get_config_value(['unique_initial_sample', 'nudging'])
 
+            # If nudge_value is not None, it must be a list of two values.
             if isinstance(nudge_value, list):
                 nudging = nudge_value
             elif nudge_value == None:
-                pass
+                nudging = []
             else:
                 ValueError('Problem reading nudge values. It must be a list consisting of how many samples to include\n'
                            'and what top_n space to draw from. Like [5, 100]\n'
                            'draws 5 random molecules from the top-100 best molecules.')
-
+                
             replicates_first_exp = first_experiment_config['replicate']
 
             unique_indices_list = []
 
+            # Create unique indices for each replicate.
             for i in range(replicates_first_exp):
-
+                
+                # Calculate unique indices
                 unique_indices = self._calculate_unique_indices(first_experiment_config, self.unique_initial_sample, nudging)
                 unique_indices_list.append(unique_indices)
 
@@ -393,7 +402,7 @@ class Experimenter:
             if uniform_indices is not None:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
             elif unique_indices is not None:
-                unique_seeds = unique_indices[i]
+                unique_seeds = unique_indices[i].tolist()
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=unique_seeds, **model_params)
             else:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, **model_params)
