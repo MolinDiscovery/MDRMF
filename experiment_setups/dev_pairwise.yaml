@@ -1,4 +1,4 @@
-- Protocol_name: replicate_tests_[5, 100]
+- Protocol_name: pairwise_dev
 
 - save_models: False
 - save_datasets: False
@@ -9,37 +9,21 @@
 # here with 5 molecules from top 100.
 - unique_initial_sample:
     sample_size: 10
-    nudging: [5, 100]
+    nudging: [5, 50]
 
 
 - Experiment:
     name: 01_RF_rdkit2D
-    replicate: 30
+    replicate: 5
 
-    dataset: datasets/DTP_rdkit2D_fix2.pkl
+    dataset: datasets/dataset_mqn_100.pkl
 
     model:
-      name: RFModeller
+      name: RFModellerPairwise
       iterations: 5
-      acquisition_size: 20
+      acquisition_size: 10
       acquisition_method: greedy
 
     metrics:
       names: [top-k, top-k-acquired]
-      k: [100]
-
-
-- Experiment:
-    name: 02_RF_CDDD
-
-    dataset: datasets/DTP_CDDD_fix2.pkl
-
-    model:
-      name: RFModeller
-      iterations: 5
-      acquisition_size: 20
-      acquisition_method: greedy
-
-    metrics: 
-      names: [top-k, top-k-acquired]
-      k: [100]
+      k: [20]

@@ -14,9 +14,8 @@
       n: 10
       top_candidates: True
 
-    # It is possible to use either a featurizer and a ´SMILES_col: smiles_column_name´
-    # However, it is also to use a pre-computed vector if given the ´vector_col: vector_column_name´ keyword
-    # If given a SMILES_col a featurizer must be provided.
+    # It is possible to use a featurizer and a ´SMILES_col: smiles_column_name´ (If given a SMILES_col a featurizer must be provided.)
+    # However, it is also possible to use a pre-computed vector if given the ´vector_col: vector_column_name´ keyword.
     data:
       datafile: DTP_data_labels_dummy_short.csv
       SMILES_col: SMILES

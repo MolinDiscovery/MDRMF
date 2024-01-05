@@ -308,3 +308,17 @@ class Dataset:
             selected_indices = sorted_indices[:n]
 
         return Dataset(self.X[selected_indices], self.y[selected_indices], self.ids[selected_indices], self.w[selected_indices])
+    
+
+    def create_pairwise_dataset(self):
+        n_samples = len(self.y)
+        X_pairwise = []
+        y_pairwise = []
+
+        for i in range(n_samples):
+            for j in range(n_samples):
+                combined_features = np.concatenate([self.X[i], self.X[j], self.X[i] - self.X[j]])
+                X_pairwise.append(combined_features)
+                y_pairwise.append(self.y[i] - self.y[j])
+
+        return Dataset(np.array(X_pairwise), np.array(y_pairwise))
