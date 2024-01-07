@@ -16,7 +16,7 @@
     name: 01_RF_rdkit2D
     replicate: 5
 
-    dataset: datasets/dataset_mqn_100.pkl
+    dataset: datasets/dataset_mqn.pkl
 
     model:
       name: RFModellerPairwise
@@ -26,4 +26,4 @@
 
     metrics:
       names: [top-k, top-k-acquired]
-      k: [20]
+      k: [100]

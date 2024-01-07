@@ -39,15 +39,13 @@ class RFModellerPairwise(Modeller):
         self.model = RandomForestRegressor(**self.kwargs)
         self.feature_importance_opt = feature_importance_opt
         self.use_pairwise = use_pairwise
+        self.model_dataset = None
 
         if self.feature_importance_opt is not None:
             self.optimize_for_feature_importance(self.feature_importance_opt)
             self.dataset = self.eval_dataset.copy() # this is a hot-fix solution
 
     def fit(self, iterations_in=None):
-        
-        if self.use_pairwise:
-            self.dataset = self.dataset.create_pairwise_dataset()
 
         if iterations_in is not None:
             feat_opt = True
@@ -67,11 +65,17 @@ class RFModellerPairwise(Modeller):
             logging.error("Invalid seeds. Must be a list or ndarray of integers, or None.")
             return
 
+        self.model_dataset = initial_pts # hot-fix solution.
+
         if not feat_opt:
             print(f"y values of starting points {initial_pts.y}")
-
-        self.model.fit(initial_pts.X, initial_pts.y)
         
+        if self.use_pairwise:
+            initial_pts_pairwise = initial_pts.create_pairwise_dataset()
+            self.model.fit(initial_pts_pairwise.X, initial_pts_pairwise.y)
+        else:
+            self.model.fit(initial_pts.X, initial_pts.y)
+
         # First evaluation, using only the initial points
         if self.evaluator is not None and feat_opt is False:
             self.call_evaluator(i=-1, model_dataset=initial_pts) # -1 because ´call_evaluator´ starts at 1, and this iteration should be 0.
@@ -84,24 +88,28 @@ class RFModellerPairwise(Modeller):
 
         for i in range(iterations):
         # Acquire new points
-            acquired_pts = self._acquisition(self.model)
+            acquired_pts = self._acquisition_pairwise()
 
             # Merge old and new points
             if i == 0:
-                model_dataset = self.dataset.merge_datasets([initial_pts, acquired_pts])
+                self.model_dataset = self.dataset.merge_datasets([initial_pts, acquired_pts])
             else:
-                model_dataset = self.dataset.merge_datasets([model_dataset, acquired_pts])
+                self.model_dataset = self.dataset.merge_datasets([self.model_dataset, acquired_pts])
 
+            # Reset model before training if true
             if self.retrain:
-                # Reset model and train
                 self.model = RandomForestRegressor(**self.kwargs)
-                self.model.fit(model_dataset.X, model_dataset.y)
+            
+            # fits the model using a pairwise dataset or normal dataset
+            if self.use_pairwise:
+                model_dataset_pairwise = self.model_dataset.create_pairwise_dataset()
+                self.model.fit(model_dataset_pairwise.X, model_dataset_pairwise.y)
             else:
-                # Train on existing model
-                self.model.fit(model_dataset.X, model_dataset.y)
+                self.model.fit(self.model_dataset.X, self.model_dataset.y)
 
+            # Call evaluator if true
             if self.evaluator is not None and feat_opt is False:
-                self.call_evaluator(i=i, model_dataset=model_dataset)
+                self.call_evaluator(i=i, model_dataset=self.model_dataset)
 
             if feat_opt:
                 self._print_progress_bar(iteration=i, total=iterations)
@@ -112,11 +120,51 @@ class RFModellerPairwise(Modeller):
         return self.model
     
 
-    def predict(self, predict_dataset):
-        if not self.use_pairwise:
-            return self.model.predict(predict_dataset.X)
-        else:
-            pass
+    def _pairwise_predict(self, train_dataset: Dataset, predict_dataset: Dataset, model: RandomForestRegressor):
+        """
+        Predicts molecular properties in the prediction dataset using a RandomForestRegressor model and pairwise comparisons with the training dataset.
+
+        Parameters:
+        - train_dataset (Dataset): Dataset with known molecular properties for training.
+        - predict_dataset (Dataset): Dataset of molecules to predict properties for.
+        - model (RandomForestRegressor): Trained RandomForestRegressor model.
+
+        Returns:
+        - List[float]: Predicted properties for each molecule in the predict_dataset.
+        """
+        mols_predict = predict_dataset.X
+        mols_train = train_dataset.X
+        y_train = train_dataset.y
+
+        predictions = []
+        for pmol in mols_predict:
+            X_test = []
+            for tmol in mols_train:
+                X = list(tmol) + list(pmol) + (list(tmol - pmol))
+                X_test.append(X)      
+            
+            dy_preds = model.predict(np.array(X_test))
+            y_preds = y_train + dy_preds
+            y_pred = y_preds.mean()
+            predictions.append(y_pred)
+
+        predictions = np.array(predictions)
+        return predictions
+    
+
+    def predict(self, dataset: Dataset, dataset_train: Dataset = None):
+
+        if isinstance(dataset, Dataset) is False:
+            logging.error("Wrong object type. Must be of type `Dataset`")
+            sys.exit()
+            
+        if isinstance(dataset, Dataset) and isinstance(dataset_train, Dataset) and self.use_pairwise:
+            preds = self._pairwise_predict(dataset_train, dataset, self.model)
+
+        elif isinstance(dataset, Dataset) is True:
+            preds = self.model.predict(dataset.X)
+
+        return preds
 
 
     def save(self, filename: str):
@@ -142,6 +190,26 @@ class RFModellerPairwise(Modeller):
         except Exception as e:
             logging.error(f"Unexpected error: {str(e)}")
             raise
+    
+
+    def _acquisition_pairwise(self):
+        
+        preds = self.predict(self.dataset, self.model_dataset)
+
+        if self.acquisition_method == "greedy":
+
+            # Find indices of the x-number of smallest values
+            indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
+
+            # Get the best docked molecules from the dataset
+            acq_dataset = self.dataset.get_points(indices, remove_points=True)
+
+        if self.acquisition_method == "random":
+            
+            # Get random points and delete from dataset
+            acq_dataset = self.dataset.get_samples(self.acquisition_size, remove_points=True)
+
+        return acq_dataset
 
 
     @staticmethod
@@ -216,8 +284,7 @@ class RFModellerPairwise(Modeller):
         # -----
         # Once the desired features have been found we need to set he dataset.X to the indexes that was found most important.
         # I think we can do this by just manipulating self.dataset, but I am a little unsure if this will disturb other parts
-        # of the code. I don't think so, as we never return the Dataset at any time.  
-
+        # of the code. I don't think so, as we never return the Dataset at any time.
 
     def _print_progress_bar(self, iteration, total, bar_length=50, prefix="Progress"):
         """
