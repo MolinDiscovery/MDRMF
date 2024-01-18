@@ -4,7 +4,6 @@ from re import U
 import numpy as np
 import pickle
 
-
 class Dataset:
 
     def __init__(self, X, y, ids=None, w=None, keep_unlabeled_data_only=False) -> None:
@@ -311,14 +310,21 @@ class Dataset:
     
 
     def create_pairwise_dataset(self):
-        n_samples = len(self.y)
-        X_pairwise = []
-        y_pairwise = []
+        X1 = self.X
+        X2 = self.X
 
-        for i in range(n_samples):
-            for j in range(n_samples):
-                combined_features = np.concatenate([self.X[i], self.X[j], self.X[i] - self.X[j]])
-                X_pairwise.append(combined_features)
-                y_pairwise.append(self.y[i] - self.y[j])
+        n1 = X1.shape[0]
+        n2 = X2.shape[0]
 
-        return Dataset(np.array(X_pairwise), np.array(y_pairwise))
+        X1 = X1[:, np.newaxis, :].repeat(n2, axis=1)
+        X2 = X2[np.newaxis, :, :].repeat(n1, axis=0)
+
+        X = np.concatenate([X1, X2, X1 - X2], axis=2)
+        X = X.reshape(n1 * n2, -1)
+        
+        y1 = self.y
+        y2 = self.y
+
+        y = (y1[:, np.newaxis] - y2[np.newaxis, :]).flatten()
+
+        return Dataset(X, y)

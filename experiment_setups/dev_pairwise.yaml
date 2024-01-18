@@ -4,26 +4,26 @@
 - save_datasets: False
 - save_nothing: True
 
-# Implemented the ability to have a unique initial sample for all replicates.
-# Allows one to define the initial sample size. Also allow one to nudge for model
-# here with 5 molecules from top 100.
-- unique_initial_sample:
-    sample_size: 10
-    nudging: [5, 50]
+
+# - unique_initial_sample:
+#     sample_size: 10
+#     nudging: [5, 100]
 
 
 - Experiment:
-    name: 01_RF_rdkit2D
-    replicate: 5
+    name: pairwise_dev
+    replicate: 3
 
     dataset: datasets/dataset_mqn.pkl
 
     model:
-      name: RFModellerPairwise
+      name: RFModeller
       iterations: 5
-      acquisition_size: 10
+      acquisition_size: 20
       acquisition_method: greedy
+      use_pairwise: True
 
     metrics:
-      names: [top-k, top-k-acquired]
+      #names: [top-k, top-k-acquired]
+      names: [top-k-acquired]
       k: [100]

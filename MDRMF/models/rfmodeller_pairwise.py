@@ -4,6 +4,7 @@ import os
 import sys
 from typing import Dict
 import numpy as np
+from numpy import newaxis, concatenate, std
 from sklearn.ensemble import RandomForestRegressor
 from MDRMF.models.modeller import Modeller
 from MDRMF.dataset import Dataset
@@ -66,12 +67,17 @@ class RFModellerPairwise(Modeller):
             return
 
         self.model_dataset = initial_pts # hot-fix solution.
+        '''
+        It is evidents from the above that we can rewrite the merging code,
+        so it only needs to merge self.model_dataset and acquired_pts.
+        '''
 
         if not feat_opt:
             print(f"y values of starting points {initial_pts.y}")
         
         if self.use_pairwise:
             initial_pts_pairwise = initial_pts.create_pairwise_dataset()
+
             self.model.fit(initial_pts_pairwise.X, initial_pts_pairwise.y)
         else:
             self.model.fit(initial_pts.X, initial_pts.y)
@@ -120,7 +126,7 @@ class RFModellerPairwise(Modeller):
         return self.model
     
 
-    def _pairwise_predict(self, train_dataset: Dataset, predict_dataset: Dataset, model: RandomForestRegressor):
+    def _pairwise_predict_old(self, train_dataset: Dataset, predict_dataset: Dataset, model: RandomForestRegressor):
         """
         Predicts molecular properties in the prediction dataset using a RandomForestRegressor model and pairwise comparisons with the training dataset.
 
@@ -150,6 +156,18 @@ class RFModellerPairwise(Modeller):
 
         predictions = np.array(predictions)
         return predictions
+
+    
+    def _pairwise_predict(self, train_dataset: Dataset, predict_dataset: Dataset, model: RandomForestRegressor):
+        n1 = predict_dataset.X.shape[0]
+        n2 = train_dataset.X.shape[0]
+
+        X1X2 = self.PADRE_features(predict_dataset.X, train_dataset.X)
+        y1_minus_y2_hat = model.predict(X1X2)
+        y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
+        mu = y1_hat_distribution.mean(axis=1)
+        #std = y1_hat_distribution.std(axis=1)
+        return mu
     
 
     def predict(self, dataset: Dataset, dataset_train: Dataset = None):
@@ -203,6 +221,7 @@ class RFModellerPairwise(Modeller):
 
             # Get the best docked molecules from the dataset
             acq_dataset = self.dataset.get_points(indices, remove_points=True)
+            print(acq_dataset.y)
 
         if self.acquisition_method == "random":
             
@@ -303,3 +322,37 @@ class RFModellerPairwise(Modeller):
 
         sys.stdout.write(f"\r{prefix}: [{arrow + spaces}] {int(progress * 100)}% ({iteration}/{total})")
         sys.stdout.flush()
+
+
+    def PADRE_features(self, X1, X2):
+        n1 = X1.shape[0]
+        n2 = X2.shape[0]
+
+        X1 = X1[:, newaxis, :].repeat(n2, axis=1)
+        X2 = X2[newaxis, :, :].repeat(n1, axis=0)
+
+        X1X2_combined = concatenate([X1, X2, X1 - X2], axis=2)
+        return X1X2_combined.reshape(n1 * n2, -1)
+
+
+    def PADRE_labels(self, y1, y2):
+        return (y1[:, newaxis] - y2[newaxis, :]).flatten()
+
+
+    def PADRE_train(self, model, train_X, train_y):
+        X1X2 = self.PADRE_features(train_X, train_X)
+        y1_minus_y2 = self.PADRE_labels(train_y, train_y)
+        model.fit(X1X2, y1_minus_y2)
+        return model
+
+
+    def PADRE_predict(self, model, test_X, train_X, train_y):
+        n1 = test_X.shape[0]
+        n2 = train_X.shape[0]
+
+        X1X2 = self.PADRE_features(test_X, train_X)
+        y1_minus_y2_hat = model.predict(X1X2)
+        y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_y[newaxis, :]
+        mu = y1_hat_distribution.mean(axis=1)
+        std = y1_hat_distribution.std(axis=1)
+        return mu, std

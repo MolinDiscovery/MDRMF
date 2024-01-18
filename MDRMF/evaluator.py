@@ -4,10 +4,12 @@ import copy
 
 
 class Evaluator:
+    
     def __init__(self, original_dataset, metrics, k_values):
         self.dataset = copy.deepcopy(original_dataset)
         self.metrics = metrics
         self.k_values = [int(k) for k in k_values]
+
 
     def evaluate(self, model, eval_dataset, model_dataset):
         self.dataset = eval_dataset.copy() #
@@ -25,13 +27,14 @@ class Evaluator:
                         results[f"top-{k} acquired"] = self.top_n_in_model_set(k, model_dataset)
         return results
 
-    def top_n_correct(self, n, model, model_dataset):
 
+    def top_n_correct(self, n, model, model_dataset):
         model_predictions = model.predict(self.dataset, model_dataset) # Predict on the full dataset
         preds_indices = np.argsort(model_predictions)[:n] # Sort all predictions from lowest to highest and gets the indices of n amount of mols
         top_n_real_indices = np.argsort(self.dataset.y)[:n] # Get the indices of the n "real" mols and sorts them from lowest to highest
         return np.mean(np.isin(preds_indices, top_n_real_indices)) # np.isin calculates how many from the correct_preds_indices that are in top_n_real_indices and np.mean makes this a fraction
     
+
     def top_n_in_model_set(self, n, model_dataset):
         lowest_y_indices = np.argsort(self.dataset.y)[:n]  # Get indices of the 'n' lowest y values.
         lowest_y_ids = set(self.dataset.ids[lowest_y_indices])  # Retrieve corresponding IDs from the dataset and ensure uniqueness.
@@ -40,6 +43,7 @@ class Evaluator:
         intersection_count = len(lowest_y_ids.intersection(ids_acquired))  # Count of common ids between lowest_y_ids and ids_acquired.
         
         return intersection_count / n  # Return the proportion of top 'n' found in the model_dataset.  
+
 
     def r2_model(self, model, model_dataset):
         '''
