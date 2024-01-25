@@ -1,0 +1,14 @@
+# unique_initial_sample_schema.yaml
+
+
+type: map
+mapping:
+    unique_initial_sample:
+        type: map
+        mapping:
+            sample_size:
+                type: int
+            nudging:
+                type: seq
+                sequence:
+                - type: int

@@ -2,19 +2,19 @@
 
 - save_models: False
 - save_datasets: False
-- save_nothing: True
+- save_nothing: False
 
 
-# - unique_initial_sample:
-#     sample_size: 10
-#     nudging: [5, 100]
+- unique_initial_sample:
+    sample_size: 10
+    nudging: [5, 500]
 
 
 - Experiment:
     name: pairwise_dev
-    replicate: 3
+    replicate: 1
 
-    dataset: datasets/dataset_mqn.pkl
+    dataset: datasets/dataset_mqn_1000.pkl
 
     model:
       name: RFModeller
@@ -24,6 +24,6 @@
       use_pairwise: True
 
     metrics:
-      #names: [top-k, top-k-acquired]
-      names: [top-k-acquired]
+      names: [top-k, top-k-acquired]
+      #names: [top-k-acquired]
       k: [100]

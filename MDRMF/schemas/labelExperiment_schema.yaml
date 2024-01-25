@@ -1,0 +1,45 @@
+# labelExperiment_schema.yaml
+
+type: map
+mapping:
+    labelExperiment:
+        type: map
+        mapping:
+            name:
+                type: str
+            replicate:
+                type: map
+                mapping:
+                    n:
+                        type: int
+                    top_candidates:
+                        type: bool
+            data:
+                type: map
+                mapping:
+                    datafile:
+                        type: str
+                    SMILES_col:
+                        type: str
+                    vector_col:
+                        type: str
+                    scores_col:
+                        type: str
+                    ids_col:
+                        type: str
+            featurizer:
+                type: map
+                mapping:
+                    name:
+                        type: str
+            model:
+                type: map
+                mapping:
+                    name:
+                        type: str
+                    acquisition_size:
+                        type: int
+                    acquisition_method:
+                        type: str
+
+

@@ -1,0 +1,36 @@
+# validation_schema.yaml
+
+type: map
+mapping:
+    Experiment:
+        type: map
+        mapping:
+            name:
+                type: str
+            replicate:
+                type: int
+            dataset:
+                type: str
+            model:
+                type: map
+                mapping:
+                    name:
+                        type: str
+                    iterations:
+                        type: int
+                    acquisition_size:
+                        type: int
+                    acquisition_method:
+                        type: str
+            metrics:
+                type: map
+                mapping:
+                    names:
+                        type: seq
+                        sequence:
+                            - type: str
+                    k:
+                        type: seq
+                        sequence:
+                            - type: int
+

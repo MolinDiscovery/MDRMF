@@ -92,7 +92,7 @@ class Dataset:
 
 
     def get_samples(self, n_samples, remove_points=False, return_indices=False, unlabeled=False):
-        random_indices = np.random.choice(len(self.X), size=n_samples, replace=False)
+        random_indices = np.random.choice(len(self.y), size=n_samples, replace=False)
         g_X = self.X[random_indices]
         g_y = self.y[random_indices]
         g_ids = self.ids[random_indices]

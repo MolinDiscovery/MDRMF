@@ -2,6 +2,7 @@ import logging
 import pickle
 import os
 import sys
+import random
 from typing import Dict
 import numpy as np
 from numpy import newaxis, concatenate, std
@@ -66,11 +67,7 @@ class RFModeller(Modeller):
             logging.error("Invalid seeds. Must be a list or ndarray of integers, or None.")
             return
 
-        self.model_dataset = initial_pts # hot-fix solution.
-        '''
-        It is evidents from the above that we can rewrite the merging code,
-        so it only needs to merge self.model_dataset and acquired_pts.
-        '''
+        self.model_dataset = initial_pts
 
         if not feat_opt:
             print(f"y values of starting points {initial_pts.y}")
@@ -96,11 +93,7 @@ class RFModeller(Modeller):
         # Acquire new points
             acquired_pts = self._acquisition_pairwise()
 
-            # Merge old and new points
-            if i == 0:
-                self.model_dataset = self.dataset.merge_datasets([initial_pts, acquired_pts])
-            else:
-                self.model_dataset = self.dataset.merge_datasets([self.model_dataset, acquired_pts])
+            self.model_dataset = self.dataset.merge_datasets([self.model_dataset, acquired_pts])
 
             # Reset model before training if true
             if self.retrain:
@@ -324,6 +317,7 @@ class RFModeller(Modeller):
 
 
     def PADRE_features(self, X1, X2):
+
         n1 = X1.shape[0]
         n2 = X2.shape[0]
 
