@@ -8,12 +8,11 @@
     sample_size: 10
     nudging: [5, 500]
 
-
 - Experiment:
     name: 01_RF_MQN
     replicate: 5
 
-    dataset: datasets/DTP_mqn_fix2.pkl
+    dataset: datasets/dataset_mqn.pkl
 
     model:
       name: RFModeller
@@ -29,7 +28,7 @@
 - Experiment:
     name: 02_RF_MQN_pairwise
 
-    dataset: datasets/DTP_mqn_fix2.pkl
+    dataset: datasets/dataset_mqn.pkl
 
     model:
       name: RFModeller

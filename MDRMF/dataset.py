@@ -56,6 +56,12 @@ class Dataset:
     
 
     def get_length(self):
+        """
+        Get the length of the dataset.
+
+        Returns:
+            int: The length of the dataset.
+        """
         return len(self.w)
 
 
@@ -166,8 +172,17 @@ class Dataset:
 
     @staticmethod
     def missing_points(original_dataset, model_dataset):
-        # compare the ids
+        """
+        Returns a dataset containing the points that are missing in the model dataset.
 
+        Args:
+            original_dataset (Dataset): The original dataset.
+            model_dataset (Dataset): The model dataset.
+
+        Returns:
+            Dataset: The dataset containing the missing points.
+        """
+        # compare the ids
         points_in_model = np.isin(original_dataset.ids, model_dataset.ids, invert=True)
         dataset = original_dataset.get_points(points_in_model)
 

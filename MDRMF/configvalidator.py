@@ -1,12 +1,7 @@
 import yaml
 from pykwalify.core import Core
-from pykwalify.errors import SchemaError
+from MDRMF import Dataset
 
-# Initialize core with source file and schema file
-#c = Core(source_file="experiment_setups/dev_tests/test.yaml", schema_files=["MDRMF/schemas/validation_schema.yaml"])
-
-# Validate the YAML
-#c.validate(raise_exception=True)
 
 class ConfigValidator:
     
@@ -34,6 +29,7 @@ class ConfigValidator:
     
 
     def load_schema(self, file):
+        """Load and return the YAML schema from the specified file."""
         with open(file, 'r') as file:
             return yaml.safe_load(file)
 
@@ -61,7 +57,7 @@ class ConfigValidator:
     Please, include only one "Experiment" or "labelExperiment",
     and check structure of your config file.
                             ''')
-        
+
 
     def data_validation(self, file):
         """
@@ -70,7 +66,7 @@ class ConfigValidator:
         """        
         config = self.load_yaml(file)
         self.check_for_exps(config)
-        
+
         for i in config:
             for k, j in i.items():
                 if k == 'Protocol_name':
@@ -94,19 +90,20 @@ class ConfigValidator:
                 elif k == 'Experiment':
                     schema = self.load_schema('MDRMF/schemas/Experiment_schema.yaml')
                     c = Core(source_data=i, schema_data=schema)
-                    c.validate(raise_exception=True)        
+                    c.validate(raise_exception=True)
+                    if j.get('dataset') is not None:
+                        pass
+                        Dataset.load(j.get('dataset')) # Preemptively loads every dataset to see if any of them fails.
                 elif k == 'labelExperiment':
                     schema = self.load_schema('MDRMF/schemas/labelExperiment_schema.yaml')
                     c = Core(source_data=i, schema_data=schema)
                     c.validate(raise_exception=True)
                 else:
-                    raise ValueError(f'This top-level key is not accepted in the settings: {k}')        
+                    raise ValueError(f'This top-level key is not accepted in the settings: {k}')
                 
         print('''
-              Data validation completed. No type errors found the in configuration file.
-              Continuing with preliminary control run to ensure config compliance...
+              Data validation completed. Found no semantic errors in the configuration file.
               ''')
 
-v = ConfigValidator()
-v.data_validation('experiment_setups/dev_tests/test.yaml')
-
+# v = ConfigValidator()
+# v.data_validation('experiment_setups/its_eksamen.yaml')

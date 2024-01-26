@@ -4,18 +4,40 @@ type: map
 mapping:
     Experiment:
         type: map
+        required: True
         mapping:
             name:
                 type: str
+                required: True
             replicate:
                 type: int
             dataset:
                 type: str
-            model:
+            data:
                 type: map
+                mapping:
+                    datafile:
+                        type: any
+                    SMILES_col:
+                        type: any
+                    scores_col:
+                        type: any
+                    ids_col:
+                        type: any
+            featurizer:
+                type: map
+                allowempty: True
                 mapping:
                     name:
                         type: str
+                        required: True
+            model:
+                type: map
+                allowempty: True
+                mapping:
+                    name:
+                        type: str
+                        required: True
                     iterations:
                         type: int
                     acquisition_size:
@@ -33,4 +55,3 @@ mapping:
                         type: seq
                         sequence:
                             - type: int
-

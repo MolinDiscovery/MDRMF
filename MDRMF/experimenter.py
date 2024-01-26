@@ -13,20 +13,23 @@ import atexit
 from typing import List
 from MDRMF.evaluator import Evaluator
 import MDRMF.models as mfm
-from MDRMF import Dataset, MoleculeLoader, Featurizer, Model
+from MDRMF import Dataset, MoleculeLoader, Featurizer, Model, ConfigValidator
 
 class Experimenter:
 
-    def __init__(self, config_file: str, pre_run: bool = False):
+    def __init__(self, config_file: str):
 
         self.config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), config_file)
-        self.pre_run = pre_run
         self.experiments = self._load_config()
         self.uniform_initial_sample = self.get_config_value(['uniform_initial_sample']) or None
         self.unique_initial_sample = self.get_config_value(['unique_initial_sample', 'sample_size']) or None
         self.save_models = self.get_config_value(['save_models']) or False # Don't save models by default.
         self.save_datasets = self.get_config_value(['save_datasets']) or False # Don't save datasets by default.
         self.save_nothing = self.get_config_value(['save_nothing']) or False # Save results by default, if True deletes all data after completion.
+
+        # Validate the config file.
+        validator = ConfigValidator()
+        validator.data_validation(self.config_file)
 
         # Generate ids
         self.protocol_name = self.get_protocol_name()
@@ -349,11 +352,6 @@ class Experimenter:
     def conduct_experiment(self, exp_config: dict, uniform_indices=None, unique_indices=None):
 
         dataset_model = self._get_or_create_dataset(exp_config)
-
-        if self.pre_run:
-            print(dataset_model)
-            dataset_model = dataset_model.get_samples(500)
-            print(dataset_model)
 
         if not dataset_model:
             raise Exception("Unable to create or load a dataset model.")
