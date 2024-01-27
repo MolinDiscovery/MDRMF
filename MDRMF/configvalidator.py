@@ -63,7 +63,10 @@ class ConfigValidator:
         """
         Performs data validation on the configuration file.
         Includes type checks and schema validation.
-        """        
+        """
+        print(f'''
+              Validating: configuration file...
+              ''')
         config = self.load_yaml(file)
         self.check_for_exps(config)
 
@@ -98,6 +101,9 @@ class ConfigValidator:
                     schema = self.load_schema('MDRMF/schemas/labelExperiment_schema.yaml')
                     c = Core(source_data=i, schema_data=schema)
                     c.validate(raise_exception=True)
+                    if j.get('dataset') is not None:
+                        pass
+                        Dataset.load(j.get('dataset')) # Preemptively loads every dataset to see if any of them fails.
                 else:
                     raise ValueError(f'This top-level key is not accepted in the settings: {k}')
                 
