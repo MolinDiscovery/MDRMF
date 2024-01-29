@@ -88,7 +88,7 @@ class ConfigValidator:
                     schema = self.load_schema('MDRMF/schemas/unique_initial_sample_schema.yaml')  
                     c = Core(source_data=i, schema_data=schema)
                     c.validate(raise_exception=True)
-                    if len(i['unique_initial_sample']['nudging']) != 2:
+                    if j.get('nudging') != None and len(i['unique_initial_sample']['nudging']) != 2:
                         raise ValueError("The 'nudging' list must contain exactly two elements.")
                 elif k == 'Experiment':
                     schema = self.load_schema('MDRMF/schemas/Experiment_schema.yaml')
@@ -111,5 +111,5 @@ class ConfigValidator:
               Data validation completed. Found no semantic errors in the configuration file.
               ''')
 
-# v = ConfigValidator()
-# v.data_validation('experiment_setups/its_eksamen.yaml')
+v = ConfigValidator()
+v.data_validation('experiment_setups/pairwise_vs_descriptor.yaml')
