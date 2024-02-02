@@ -9,5 +9,5 @@ from .dataset import Dataset
 from .datasetflagged import FlaggedDataset
 from .evaluator import Evaluator
 from .model import Model
-from .configvalidator import ConfigValidator
+#from .configvalidator import ConfigValidator
 #from .experimenter import Experimenter

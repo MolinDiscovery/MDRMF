@@ -27,20 +27,20 @@
       names: [top-k]
       k: [100]
 
-- Experiment:
-    name: 2D_exp
-    replicate: 5
+# - Experiment:
+#     name: 2D_exp
+#     replicate: 5
 
-    dataset: 2D.pkl
+#     dataset: 2D.pkl
 
-    model:
-      name: RFModeller
-      iterations: 10
-      initial_sample_size: 10 # this option is ignored when seeds are set
-      acquisition_size: 10
-      acquisition_method: greedy
-      seeds: [5801, 2891,   31, 9356,  214, 7240, 4066, 5703, 4702,  373]
+#     model:
+#       name: RFModeller
+#       iterations: 10
+#       initial_sample_size: 10 # this option is ignored when seeds are set
+#       acquisition_size: 10
+#       acquisition_method: greedy
+#       seeds: [5801, 2891,   31, 9356,  214, 7240, 4066, 5703, 4702,  373]
 
-    metrics: 
-      names: [top-k]
-      k: [100]
+#     metrics: 
+#       names: [top-k]
+#       k: [100]

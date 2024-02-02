@@ -3,7 +3,6 @@
 - Experiment:
     name: Exp01
     replicate: 5
-    parallelize: False # NOT IMPLEMENTED. Allows one to parallalize each replicate -> distribute to several CPUs/GPUs
 
     data:
       datafile: 10K.csv
@@ -36,7 +35,6 @@
 - Experiment:
     name: Exp02
     replicate: 5
-    parallelize: False
 
     dataset: dataset.pkl
 

@@ -2,7 +2,7 @@
 
 - save_models: False
 - save_datasets: False
-- save_nothing: False
+- save_nothing: True
 
 - unique_initial_sample:
     sample_size: 10
