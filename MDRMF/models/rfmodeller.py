@@ -49,6 +49,9 @@ class RFModeller(Modeller):
 
 
     def fit(self, iterations_in=None):
+        """
+        Fits the RFModeller.
+        """
 
         if iterations_in is not None:
             feat_opt = True
@@ -160,23 +163,36 @@ class RFModeller(Modeller):
         y1_minus_y2_hat = model.predict(X1X2)
         y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
         mu = y1_hat_distribution.mean(axis=1)
-        #std = y1_hat_distribution.std(axis=1)
-        return mu
+        std = y1_hat_distribution.std(axis=1)
+        return mu, std
     
 
-    def predict(self, dataset: Dataset, dataset_train: Dataset = None):
+    def predict(self, dataset: Dataset, dataset_train: Dataset = None, return_uncertainty = False):
 
         if isinstance(dataset, Dataset) is False:
             logging.error("Wrong object type. Must be of type `Dataset`")
             sys.exit()
-            
-        if isinstance(dataset, Dataset) and isinstance(dataset_train, Dataset) and self.use_pairwise:
-            preds = self._pairwise_predict(dataset_train, dataset, self.model)
 
-        elif isinstance(dataset, Dataset) is True:
-            preds = self.model.predict(dataset.X)
+        def pred_with_uncertainty(X, rfr):
+            preds = np.zeros((len(dataset.y), len(rfr.estimators_)))
+            for j, submodel in enumerate(rfr.estimators_):
+                preds[:,j] = submodel.predict(X)
+            return np.mean(preds, axis=1), np.var(preds, axis=1)        
 
-        return preds
+        # If the user wants the uncertainty on the predictions this code is executed.
+        if return_uncertainty:
+            if isinstance(dataset, Dataset) and isinstance(dataset_train, Dataset) and self.use_pairwise:
+                preds, uncertainty = self._pairwise_predict(dataset_train, dataset, self.model)
+            elif isinstance(dataset, Dataset) is True:
+                preds, uncertainty = pred_with_uncertainty(dataset.X, self.model)
+            return preds, uncertainty
+        else:
+        # By default only the predictions are returned.
+            if isinstance(dataset, Dataset) and isinstance(dataset_train, Dataset) and self.use_pairwise:
+                preds, _ = self._pairwise_predict(dataset_train, dataset, self.model)
+            elif isinstance(dataset, Dataset) is True:
+                preds = self.model.predict(dataset.X)
+            return preds
 
 
     def save(self, filename: str):

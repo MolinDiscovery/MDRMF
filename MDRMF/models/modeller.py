@@ -65,7 +65,8 @@ class Modeller:
         """
 
         # Predict on the full dataset
-        preds = model.predict(self.dataset.X)
+        # preds = model.predict(self.dataset.X)
+        preds, uncertainty = self.predict(self.dataset, self.model_dataset, return_uncertainty=True)
 
         if self.acquisition_method == "greedy":
 
@@ -104,6 +105,27 @@ class Modeller:
             picks_idx = np.argsort(np.max(arr, axis=0))[::-1][:self.acquisition_size]
             
             acq_dataset = self.dataset.get_points(list(picks_idx))
+
+        if self.acquisition_method == "MU":
+            # MU stands for most uncertainty.
+
+            # Finds the indices with the highest uncertainty.
+            indices = np.argpartition(uncertainty, -self.acquisition_size)[-self.acquisition_size:]
+
+            acq_dataset = self.dataset.get_points(indices, remove_points=True)
+
+        if self.acquisition_method == 'LCB':
+            # LCB stands for Lower Confidence Bound.
+            
+            # Calculate the LCB score for each point.
+            beta = 1  # This is a hyperparameter that can be tuned.
+            lcb = preds - beta * uncertainty  # Note: Assuming lower preds are better.
+            
+            # Find the indices with the lowest LCB score.
+            # Since np.argpartition finds indices for the smallest values and we're minimizing, it's directly applicable here.
+            indices = np.argpartition(lcb, self.acquisition_size)[:self.acquisition_size]
+            
+            acq_dataset = self.dataset.get_points(indices, remove_points=True)
 
         return acq_dataset
     
