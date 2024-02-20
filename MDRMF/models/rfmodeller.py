@@ -47,6 +47,7 @@ class RFModeller(Modeller):
             self.optimize_for_feature_importance(self.feature_importance_opt)
             self.dataset = self.eval_dataset.copy() # this is a hot-fix solution
 
+
     def fit(self, iterations_in=None):
 
         if iterations_in is not None:
@@ -77,7 +78,7 @@ class RFModeller(Modeller):
 
             self.model.fit(initial_pts_pairwise.X, initial_pts_pairwise.y)
         else:
-            self.model.fit(initial_pts.X, initial_pts.y)
+            self.model.fit(self.model_dataset.X, self.model_dataset.y)
 
         # First evaluation, using only the initial points
         if self.evaluator is not None and feat_opt is False:
@@ -91,7 +92,7 @@ class RFModeller(Modeller):
 
         for i in range(iterations):
         # Acquire new points
-            acquired_pts = self._acquisition_pairwise()
+            acquired_pts = self._acquisition(model=self.model, model_dataset=self.model_dataset)
 
             self.model_dataset = self.dataset.merge_datasets([self.model_dataset, acquired_pts])
 

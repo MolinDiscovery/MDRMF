@@ -1,5 +1,7 @@
 import numpy as np
+import sys
 from MDRMF.dataset import Dataset
+from rdkit import DataStructs
 
 class Modeller:
     """
@@ -51,7 +53,7 @@ class Modeller:
         return random_points
 
 
-    def _acquisition(self, model):
+    def _acquisition(self, model, model_dataset):
         """
         Performs the acquisition step to select new points for the model.
 
@@ -77,6 +79,31 @@ class Modeller:
             
             # Get random points and delete from dataset
             acq_dataset = self.dataset.get_samples(self.acquisition_size, remove_points=True)
+
+        if self.acquisition_method == "tanimoto":
+
+            hit_feature_vectors = model_dataset.X
+            pred_feature_vectors = self.dataset.X
+
+            arr = np.zeros((len(hit_feature_vectors), len(pred_feature_vectors)))
+
+            for hit_index, hit_mol in enumerate(hit_feature_vectors):
+                
+                for pred_index, pred_mol in enumerate(pred_feature_vectors):
+
+                    fp_hits = np.where(hit_mol == 1)[0]
+                    fp_preds = np.where(pred_mol == 1)[0]
+
+                    common = set(fp_hits) & set(fp_preds)
+                    combined = set(fp_hits) | set(fp_preds)
+
+                    similarity = len(common) / len (combined)
+                    
+                    arr[hit_index, pred_index] = similarity
+            
+            picks_idx = np.argsort(np.max(arr, axis=0))[::-1][:self.acquisition_size]
+            
+            acq_dataset = self.dataset.get_points(list(picks_idx))
 
         return acq_dataset
     

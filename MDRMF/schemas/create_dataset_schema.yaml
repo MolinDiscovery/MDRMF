@@ -1,0 +1,30 @@
+# create_dataset_schema.yaml
+
+type: map
+mapping:
+    create_dataset:
+        type: map
+        mapping:
+            name:
+                type: str
+            data:
+                type: map
+                mapping:
+                    datafile:
+                        type: str
+                    SMILES_col:
+                        type: str
+                    vector_col:
+                        type: str
+                    scores_col:
+                        type: str
+                    ids_col:
+                        type: str
+            featurizer:
+                type: map
+                allowempty: True
+                mapping:
+                    name:
+                        type: str
+
+

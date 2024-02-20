@@ -318,8 +318,8 @@ class Experimenter:
                 key, value = list(experiment.items())[0]
                 if key == 'Experiment':
                     self.conduct_experiment(value, uniform_indices, unique_indices_list)
-                elif key == 'Dataset':
-                    # Call self.make_dataset(value)
+                elif key == 'create_dataset':
+                    self.make_dataset(value)
                     pass
                 elif key == 'labelExperiment':
                     self.conduct_labelExperiment(value)
@@ -411,8 +411,7 @@ class Experimenter:
             if uniform_indices is not None:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
             elif unique_indices is not None:
-                unique_seeds = unique_indices[i].tolist()
-                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=unique_seeds, **model_params)
+                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
             else:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, **model_params)
             model = Model(model=model_input)
@@ -465,6 +464,16 @@ class Experimenter:
         model.train()
         acquired_points = model.get_acquired_points(dataset_unlabeled)
         print(acquired_points)
+
+
+    def make_dataset(self, exp_config: dict):
+        
+        dataset = self._get_or_create_dataset(exp_config)
+
+        dataset_name = exp_config['name'] + '.pkl'
+        dataset_file = os.path.join(self.root_dir, dataset_name)
+
+        dataset.save(dataset_file)
         
 
 if __name__ == "__main__":

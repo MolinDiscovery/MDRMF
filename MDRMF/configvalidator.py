@@ -38,7 +38,7 @@ class ConfigValidator:
 
     def check_for_exps(self, config):
         """
-        Validates the config for exclusive presence of 'Experiment' or 'labelExperiment'.
+        Validates the config for exclusive presence of 'Experiment', 'labelExperiment', or 'create_dataset'.
         Raises exceptions for invalid or conflicting configurations.
         """
         e_set = set()
@@ -49,15 +49,15 @@ class ConfigValidator:
             for j in i.keys():
                 e_set.add(j)
 
-        if 'Experiment' in e_set and 'labelExperiment' in e_set:
-            raise Exception('You cannot conduct "Experiment" and "labelExperiment" at the same time!')
-        elif 'Experiment' in e_set or 'labelExperiment' in e_set:
+        if ('Experiment' in e_set and 'labelExperiment' in e_set) or ('Experiment' in e_set and 'create_dataset' in e_set) or ('labelExperiment' in e_set and 'create_dataset' in e_set):
+            raise Exception('You cannot conduct "Experiment", "labelExperiment", or "create_dataset" simultaneously!')
+        elif 'Experiment' in e_set or 'labelExperiment' in e_set or 'create_dataset' in e_set:
             pass
         else:
             raise Exception('''
     Fatal error while reading the config file.
-    Please, include only one "Experiment" or "labelExperiment",
-    and check structure of your config file.
+    Please, include only one "Experiment", "labelExperiment", or "create_dataset",
+    and check the structure of your config file.
                             ''')
 
 
@@ -158,7 +158,7 @@ class ConfigValidator:
                     
                     # Check that the user has provided a featurizer if they entered a data file
                     if data_info is not None:
-                        featurizer_config = data_info.get('featurizer')
+                        featurizer_config = j.get('featurizer')
                         if featurizer_config is None:
                             raise ValueError(f"You must provide a featurizer when providing a csv file!")
                     
@@ -177,16 +177,38 @@ class ConfigValidator:
                     if data_info is not None:
                         data_path = data_info.get('datafile')
                         if data_path is not None and not self.check_data_filepath(data_path):
-                            raise FileNotFoundError(f"Data file not found or not a csv file: {data_path}")           
+                            raise FileNotFoundError(f"Data file not found or not a csv file: {data_path}")
                         
                     # Check that the user has provided a featurizer if they entered a data file
                     if data_info is not None:
-                        featurizer_config = data_info.get('featurizer')
+                        featurizer_config = j.get('featurizer')
                         if featurizer_config is None:
                             raise ValueError(f"You must provide a featurizer when providing a csv file!\n"
                                              "For example\n\n"
                                              "featurizer:\n"
                                              "  name: rdkit2D\n")
+                elif k == 'create_dataset':
+                    schema = self.load_schema('MDRMF/schemas/create_dataset_schema.yaml')
+                    c = Core(source_data=i, schema_data=schema)
+                    c.validate(raise_exception=True)
+
+                    # File path for data files (.csv)
+                    data_info = j.get('data')
+                    if data_info is not None:
+                        data_path = data_info.get('datafile')
+                        if data_path is not None and not self.check_data_filepath(data_path):
+                            raise FileNotFoundError(f"Data file not found or not a csv file: {data_path}")
+                    else:
+                        raise ValueError('Please provide a .csv file.')
+                        
+                    # Check that the user has provided a featurizer if they entered a data file
+                    if data_info is not None:
+                        featurizer_config = j.get('featurizer')
+                        if featurizer_config is None:
+                            raise ValueError(f"You must provide a featurizer when providing a csv file!\n"
+                                             "For example\n\n"
+                                             "featurizer:\n"
+                                             "  name: rdkit2D\n")                    
                     
                 else:
                     raise ValueError(f'Error reading the configuration file at: {k}: {j}')
@@ -195,6 +217,6 @@ class ConfigValidator:
               Data validation completed. Found no semantic errors in the configuration file.
               ''')
 
-v = ConfigValidator()
-v.data_validation('experiment_setups/labelExperiment.yaml')
+# v = ConfigValidator()
+# v.data_validation('experiment_setups/labelExperiment.yaml')
 #v.data_validation('experiment_setups/its_eksamen.yaml')
