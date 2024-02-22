@@ -18,7 +18,7 @@
       name: RFModeller
       iterations: 5
       acquisition_size: 50
-      acquisition_method: MU
+      acquisition_method: greedy
 
     metrics:
       names: [top-k, top-k-acquired]

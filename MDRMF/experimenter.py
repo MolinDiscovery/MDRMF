@@ -411,7 +411,8 @@ class Experimenter:
             if uniform_indices is not None:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
             elif unique_indices is not None:
-                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
+                unique_seeds = list(unique_indices[i])
+                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=unique_seeds, **model_params)
             else:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, **model_params)
             model = Model(model=model_input)
