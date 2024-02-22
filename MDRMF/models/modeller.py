@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+from scipy.stats import norm
 from MDRMF.dataset import Dataset
 from rdkit import DataStructs
 
@@ -127,6 +128,34 @@ class Modeller:
             
             acq_dataset = self.dataset.get_points(indices, remove_points=True)
 
+        if self.acquisition_method == "EI":
+            # Find indices of the x-number of smallest values
+            low_pred_indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
+
+            # Calculate EI based on these selected predictions and their uncertainties
+            selected_preds = preds[low_pred_indices]
+            selected_uncertainty = uncertainty[low_pred_indices]
+            best_so_far = np.min(model_dataset.y)  # Assuming this represents the best observed value so far
+            ei_scores = self._calculate_ei(selected_preds, selected_uncertainty, best_so_far)
+
+            # Prioritize samples with higher EI scores
+            # Note: Since EI scores correspond to the already filtered low_pred_indices, we sort ei_scores and use them to reorder low_pred_indices
+            ei_sorted_indices = np.argsort(-ei_scores)  # Higher EI scores first
+            final_indices = low_pred_indices[ei_sorted_indices][:self.acquisition_size]
+
+            acq_dataset = self.dataset.get_points(final_indices, remove_points=True)
+
+        if self.acquisition_method == "TS":
+            # TS stands for Thompson Sampling.
+
+            # Sample from the predictive distribution
+            samples = np.random.normal(preds, uncertainty)
+            
+            # Find the indices with the lowest sampled values
+            indices = np.argpartition(samples, self.acquisition_size)[:self.acquisition_size]
+
+            acq_dataset = self.dataset.get_points(indices, remove_points=True)
+
         return acq_dataset
     
     
@@ -157,6 +186,34 @@ class Modeller:
             acq_dataset = dataset.get_samples(self.acquisition_size, remove_points=False, unlabeled=True)
 
         return acq_dataset
+
+
+    def _calculate_ei(self, selected_preds, selected_uncertainty, best_so_far):
+        """
+        Calculate the Expected Improvement (EI) for a subset of selected samples based on their predictions and uncertainties.
+
+        Parameters:
+            selected_preds (numpy.ndarray): The model's predictions for the selected samples.
+            selected_uncertainty (numpy.ndarray): The model's prediction uncertainties for the selected samples.
+            best_so_far (float): The best (lowest) prediction value observed across all samples.
+
+        Returns:
+            numpy.ndarray: The EI for each selected sample.
+        """
+        # Ensure no division by zero
+        mask = selected_uncertainty > 0
+        improvement = np.zeros(selected_preds.shape)
+        improvement[mask] = best_so_far - selected_preds[mask]
+
+        # Safe division
+        z = np.zeros(selected_preds.shape)
+        z[mask] = improvement[mask] / selected_uncertainty[mask]
+
+        # Calculate EI
+        ei = np.zeros(selected_preds.shape)
+        ei[mask] = improvement[mask] * norm.cdf(z[mask]) + selected_uncertainty[mask] * norm.pdf(z[mask])
+
+        return ei
 
 
     def fit(self):

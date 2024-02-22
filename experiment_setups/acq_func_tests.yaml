@@ -2,11 +2,28 @@
 
 - save_models: False
 - save_datasets: False
-- save_nothing: True
+- save_nothing: False
 
 - unique_initial_sample:
     sample_size: 10
     nudging: [5, 100]
+
+- Experiment:
+    name: 1_acq_test_greedy
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD.pkl
+
+    model:
+      name: RFModeller
+      iterations: 5
+      acquisition_size: 50
+      acquisition_method: TS
+
+    metrics:
+      names: [top-k, top-k-acquired]
+      k: [100]
+
 
 - Experiment:
     name: acq_test1
@@ -18,8 +35,8 @@
       name: RFModeller
       iterations: 5
       acquisition_size: 50
-      acquisition_method: greedy
+      acquisition_method: TS
 
     metrics:
       names: [top-k, top-k-acquired]
-      k: [100]
+      k: [100]      
