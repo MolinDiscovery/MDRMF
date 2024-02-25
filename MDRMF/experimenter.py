@@ -209,11 +209,11 @@ class Experimenter:
             return random_indices
         
     
-    def _calculate_unique_indices(self, exp_config: dict, unique_sample_size: int, nudging: list = []):
+    def _calculate_unique_ids(self, exp_config: dict, unique_sample_size: int, nudging: list = []):
 
         '''
         Maybe I need to make the method return the ids and not the mere indices.
-        Doing the nudging like now where we just sort and return a indices
+        Doing the nudging like now where we just sort and return indices
         for the sorted data will also require the working dataset to be sorted,
         which might not always be the case. Currently most datasets are sorted
         by y though, but it can be a future problem.
@@ -254,8 +254,18 @@ class Experimenter:
                 indices = random_top_indices + random_indices
             else:
                 indices = np.random.randint(0, length, unique_sample_size).tolist()
+        
+        '''Initially, this function returned indices. However, this possed a problem
+        in the case where datasets were not sorted by y value. To fix this problem
+        the function now returns ids (usually SMILES-strings or unique numbers) instead.
+        Do note that this means the indices must be extracted in the ´conduct_experiment´ function
+        on the "real" dataset. Also note, this requires the ids to be unique. A check will be implemented in the
+        dataset class'''
 
-        return indices
+        dataset = dataset.get_points(indices)
+        ids = dataset.ids
+
+        return ids
 
 
     def conduct_all_experiments(self):
@@ -277,7 +287,7 @@ class Experimenter:
         '''
 
         # initialize unique_indices_list to None. If it is still None after the if-statement, it will not be used.
-        unique_indices_list = None
+        unique_ids_list = None
 
         # if user inputs a unique_initial_sample use this to 'seed' the model.
         if self.unique_initial_sample is not None:
@@ -300,14 +310,14 @@ class Experimenter:
                 
             replicates_first_exp = first_experiment_config['replicate']
 
-            unique_indices_list = []
+            unique_ids_list = []
 
             # Create unique indices for each replicate.
             for i in range(replicates_first_exp):
                 
                 # Calculate unique indices
-                unique_indices = self._calculate_unique_indices(first_experiment_config, self.unique_initial_sample, nudging)
-                unique_indices_list.append(unique_indices)
+                unique_ids = self._calculate_unique_ids(first_experiment_config, self.unique_initial_sample, nudging)
+                unique_ids_list.append(unique_ids)
 
         '''
         End creating unique initial sample.
@@ -317,7 +327,7 @@ class Experimenter:
             for experiment in config:
                 key, value = list(experiment.items())[0]
                 if key == 'Experiment':
-                    self.conduct_experiment(value, uniform_indices, unique_indices_list)
+                    self.conduct_experiment(value, uniform_indices, unique_ids_list)
                 elif key == 'create_dataset':
                     self.make_dataset(value)
                     pass
@@ -349,12 +359,16 @@ class Experimenter:
         print("Time elapsed: ", _format_time(elapsed_time))
     
 
-    def conduct_experiment(self, exp_config: dict, uniform_indices=None, unique_indices=None):
+    def conduct_experiment(self, exp_config: dict, uniform_indices=None, unique_ids=None):
 
         dataset_model = self._get_or_create_dataset(exp_config)
 
         if not dataset_model:
             raise Exception("Unable to create or load a dataset model.")
+        
+        # Extract unique indices from the unique_ids
+        ['CCO', 'CCC', 'COOC']
+
 
         # --- Directory setup --- #
         experiment_directory = os.path.join(self.root_dir, exp_config['name'])
@@ -393,8 +407,10 @@ class Experimenter:
         evaluator = Evaluator(dataset_model, metrics, k_values)
 
         # If unique indices are defiend use the length of the list to define how many replicates to do.
-        if unique_indices is not None:
-            replicates = len(unique_indices)
+        # We can do this, because the length of this list will correspond to the amount of replications that was
+        # defined for the first experiment.
+        if unique_ids is not None:
+            replicates = len(unique_ids)
         else:
             replicates = exp_config['replicate'] # If replicates is not predefined get replicate from current experiment.
 
@@ -410,8 +426,8 @@ class Experimenter:
             # Setup model
             if uniform_indices is not None:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
-            elif unique_indices is not None:
-                unique_seeds = list(unique_indices[i])
+            elif unique_ids is not None:
+                unique_seeds = dataset_model.get_indices_from_ids(unique_ids[i]) # Get indices from unique_ids list for each replicate.
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=unique_seeds, **model_params)
             else:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, **model_params)
@@ -432,7 +448,8 @@ class Experimenter:
             
         # Convert results to a DataFrame 
         results_df = pd.DataFrame(results_list)
-        results_df.to_csv(os.path.join(experiment_directory, "results.csv"), index=False)
+        results_name = exp_config['name'] + ".csv" # Name of the results file is the same as the experiment name.
+        results_df.to_csv(os.path.join(experiment_directory, results_name), index=False)
 
 
     def conduct_labelExperiment(self, exp_config: dict):

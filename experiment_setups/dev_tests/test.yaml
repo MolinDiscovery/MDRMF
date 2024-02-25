@@ -10,13 +10,13 @@
 
 - unique_initial_sample:
     sample_size: 10
-    nudging: [5, 500]
+    nudging: [5, 100]
 
 - Experiment:
     name: 01_RF_MQN
-    replicate: 5
+    replicate: 2
 
-    dataset: datasets/DTP_mqn_fix2.pkl
+    dataset: datasets/dataset_mqn_shuffled.pkl
 
     model:
       name: RFModeller
@@ -27,3 +27,20 @@
     metrics:
       names: [top-k, top-k-acquired]
       k: [100]
+
+
+- Experiment:
+    name: 02_RF_MQN
+    replicate: 2
+
+    dataset: datasets/dataset_mqn_shuffled.pkl
+
+    model:
+      name: RFModeller
+      iterations: 5
+      acquisition_size: 20
+      acquisition_method: greedy
+
+    metrics:
+      names: [top-k, top-k-acquired]
+      k: [100]      

@@ -4,6 +4,8 @@ from re import U
 import numpy as np
 import pickle
 
+from pyrsistent import get_in
+
 class Dataset:
 
     def __init__(self, X, y, ids=None, w=None, keep_unlabeled_data_only=False) -> None:
@@ -20,6 +22,12 @@ class Dataset:
                 X = np.stack(X)
             except ValueError as e:
                 raise ValueError("X should be a 2D array-like structure with consistent inner dimensions.") from e
+
+        # Check that all ids are unique
+        total_size = y.size
+        unique_ids_size = (np.unique(ids)).size
+        if total_size != unique_ids_size:
+            raise ValueError("All ids are not unique.")
 
         self.X = X
         self.y = y
@@ -96,6 +104,33 @@ class Dataset:
         else:
             return Dataset(g_X, g_y, g_ids, g_w)
 
+    
+    def get_points_from_ids(self, ids: list):
+        """
+        Retrieves specific points from the dataset based on the provided list of identifiers.
+
+        Parameters:
+        ids (list): A list of identifiers specifying the data points to retrieve from the dataset.
+
+        Returns:
+        Dataset: A new Dataset object containing the data points specified by the identifiers. This dataset includes the features (`X`), labels/targets (`y`), identifiers (`ids`), and any additional weights (`w`) associated with these data points.
+        """
+        indices = np.where(np.isin(self.ids, ids))[0]
+        return self.get_points(indices)
+    
+
+    def get_indices_from_ids(self, ids: list):
+        """
+        Retrieves the indices of specific points from the dataset based on the provided list of identifiers.
+
+        Parameters:
+        ids (list): A list of identifiers specifying the data points to retrieve from the dataset.
+
+        Returns:
+        np.ndarray: An array of indices specifying the positions of the data points in the dataset.
+        """
+        return np.where(np.isin(self.ids, ids))[0]
+
 
     def get_samples(self, n_samples, remove_points=False, return_indices=False, unlabeled=False):
         random_indices = np.random.choice(len(self.y), size=n_samples, replace=False)
@@ -145,6 +180,15 @@ class Dataset:
         self.y = self.y[sort_indices]
         self.ids = self.ids[sort_indices]
         self.w = self.w[sort_indices]
+
+
+    def shuffle(self):
+        shuffle_indices = np.random.permutation(len(self.y))
+
+        self.X = self.X[shuffle_indices]
+        self.y = self.y[shuffle_indices]
+        self.ids = self.ids[shuffle_indices]
+        self.w = self.w[shuffle_indices]
 
 
     @staticmethod
@@ -343,3 +387,21 @@ class Dataset:
         y = (y1[:, np.newaxis] - y2[np.newaxis, :]).flatten()
 
         return Dataset(X, y)
+    
+
+    def split(self, test_size=0.2, shuffle=True):
+        """
+        Splits the dataset into training and testing sets.
+
+        Parameters:
+            test_size (float): The proportion of the dataset to include in the test split.
+            shuffle (bool): Whether or not to shuffle the data before splitting.
+
+        Returns:
+            tuple: Two Dataset objects representing the training and testing sets.
+        """
+        from sklearn.model_selection import train_test_split
+        X_train, X_test, y_train, y_test, ids_train, ids_test, w_train, w_test = train_test_split(
+            self.X, self.y, self.ids, self.w, test_size=test_size, random_state=None, shuffle=shuffle
+        )
+        return Dataset(X_train, y_train, ids_train, w_train), Dataset(X_test, y_test, ids_test, w_test)
