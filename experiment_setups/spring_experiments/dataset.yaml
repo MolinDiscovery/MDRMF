@@ -1,0 +1,15 @@
+- Protocol_name: Datasets
+
+- create_dataset:
+    name: dataset_morgan1024
+
+    data:
+      datafile: 10K.csv
+      SMILES_col: SMILES
+      scores_col: r_i_docking_score
+      ids_col: SMILES
+
+    featurizer:
+      name: morgan
+      nBits: 1024
+      radius: 2

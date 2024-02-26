@@ -1,0 +1,73 @@
+- Protocol_name: acq_func_tests_DTP_nudged_5percent
+
+- save_models: False
+- save_datasets: False
+- save_nothing: False
+
+- unique_initial_sample:
+    sample_size: 10
+    nudging: [5, 7000]
+
+- Experiment:
+    name: 1_acq_test_greedy
+    replicate: 10
+
+    dataset: datasets/DTP_CDDD_fix2.pkl
+
+    model:
+      name: RFModeller
+      iterations: 5
+      acquisition_size: 20
+      acquisition_method: greedy
+
+    metrics:
+      names: [top-k, top-k-acquired]
+      k: [100]
+
+
+- Experiment:
+    name: 2_acq_test_MU
+
+    dataset: datasets/DTP_CDDD_fix2.pkl
+
+    model:
+      name: RFModeller
+      iterations: 5
+      acquisition_size: 20
+      acquisition_method: MU
+
+    metrics:
+      names: [top-k, top-k-acquired]
+      k: [100]
+
+
+- Experiment:
+    name: 3_acq_test_EI
+
+    dataset: datasets/DTP_CDDD_fix2.pkl
+
+    model:
+      name: RFModeller
+      iterations: 5
+      acquisition_size: 20
+      acquisition_method: EI
+
+    metrics:
+      names: [top-k, top-k-acquired]
+      k: [100]
+
+
+- Experiment:
+    name: 4_acq_test_LCB
+
+    dataset: datasets/DTP_CDDD_fix2.pkl
+
+    model:
+      name: RFModeller
+      iterations: 5
+      acquisition_size: 20
+      acquisition_method: LCB
+
+    metrics:
+      names: [top-k, top-k-acquired]
+      k: [100]

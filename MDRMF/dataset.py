@@ -24,10 +24,10 @@ class Dataset:
                 raise ValueError("X should be a 2D array-like structure with consistent inner dimensions.") from e
 
         # Check that all ids are unique
-        total_size = y.size
-        unique_ids_size = (np.unique(ids)).size
-        if total_size != unique_ids_size:
-            raise ValueError("All ids are not unique.")
+        # total_size = y.size
+        # unique_ids_size = (np.unique(ids)).size
+        # if total_size != unique_ids_size:
+        #     raise ValueError("All ids are not unique.")
 
         self.X = X
         self.y = y
