@@ -22,6 +22,7 @@ class RFModeller(Modeller):
         acquisition_method="greedy",
         retrain=True,
         seeds=[],
+        add_noise=None,
         feature_importance_opt=None,
         use_pairwise=False,
         **kwargs) -> None:
@@ -34,7 +35,8 @@ class RFModeller(Modeller):
             acquisition_size, 
             acquisition_method, 
             retrain,
-            seeds
+            seeds,
+            add_noise,
             )
 
         self.kwargs = kwargs
@@ -71,11 +73,17 @@ class RFModeller(Modeller):
             logging.error("Invalid seeds. Must be a list or ndarray of integers, or None.")
             return
 
-        self.model_dataset = initial_pts
+        # Add noise to the initial points if desired
+        if self.add_noise is None:
+            self.model_dataset = initial_pts
+        else:
+            initial_pts.y = np.random.normal(initial_pts.y, self.add_noise)
+            self.model_dataset = initial_pts
 
         if not feat_opt:
             print(f"y values of starting points {initial_pts.y}")
         
+        # fits the model using a pairwise dataset or normal dataset
         if self.use_pairwise:
             initial_pts_pairwise = initial_pts.create_pairwise_dataset()
 
@@ -95,7 +103,7 @@ class RFModeller(Modeller):
 
         for i in range(iterations):
         # Acquire new points
-            acquired_pts = self._acquisition(model=self.model, model_dataset=self.model_dataset)
+            acquired_pts = self._acquisition(model=self.model, model_dataset=self.model_dataset, add_noise=self.add_noise)
 
             self.model_dataset = self.dataset.merge_datasets([self.model_dataset, acquired_pts])
 

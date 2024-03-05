@@ -2,7 +2,6 @@ import numpy as np
 import sys
 from scipy.stats import norm
 from MDRMF.dataset import Dataset
-from rdkit import DataStructs
 
 class Modeller:
     """
@@ -18,7 +17,7 @@ class Modeller:
         retrain (bool): Flag indicating whether to retrain the model in each iteration.
     """
     def __init__(
-            self, 
+            self,
             dataset, 
             evaluator=None, 
             iterations=10, 
@@ -26,7 +25,8 @@ class Modeller:
             acquisition_size=10, 
             acquisition_method="greedy", 
             retrain=True,
-            seeds=[]) -> None:
+            seeds=[],
+            add_noise=None) -> None:
         """
         Initializes a Modeller object with the provided parameters.
         """        
@@ -39,6 +39,7 @@ class Modeller:
         self.acquisition_method = acquisition_method
         self.retrain = retrain
         self.seeds = seeds
+        self.add_noise = add_noise
         self.results = {}
 
 
@@ -54,7 +55,7 @@ class Modeller:
         return random_points
 
 
-    def _acquisition(self, model, model_dataset):
+    def _acquisition(self, model, model_dataset, add_noise: int = 0.1):
         """
         Performs the acquisition step to select new points for the model.
 
@@ -155,6 +156,11 @@ class Modeller:
             indices = np.argpartition(samples, self.acquisition_size)[:self.acquisition_size]
 
             acq_dataset = self.dataset.get_points(indices, remove_points=True)
+
+
+        # Below we add noise to the acquired dataset to simulate real would lab data.
+        if add_noise is not None:
+            acq_dataset.y = np.random.normal(acq_dataset.y, add_noise)
 
         return acq_dataset
     
