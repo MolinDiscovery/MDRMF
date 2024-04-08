@@ -26,6 +26,7 @@ class Experimenter:
         self.save_models = self.get_config_value(['save_models']) or False # Don't save models by default.
         self.save_datasets = self.get_config_value(['save_datasets']) or False # Don't save datasets by default.
         self.save_nothing = self.get_config_value(['save_nothing']) or False # Save results by default, if True deletes all data after completion.
+        self.save_graphs = self.get_config_value(['save_graphs']) or False # Don't save graphs by default.
 
         # Validate the config file.
         validator = ConfigValidator()
@@ -210,7 +211,6 @@ class Experimenter:
         
     
     def _calculate_unique_ids(self, exp_config: dict, unique_sample_size: int, nudging: list = []):
-
         '''
         Maybe I need to make the method return the ids and not the mere indices.
         Doing the nudging like now where we just sort and return indices
@@ -367,7 +367,7 @@ class Experimenter:
             raise Exception("Unable to create or load a dataset model.")
         
         # Extract unique indices from the unique_ids
-        ['CCO', 'CCC', 'COOC']
+        # ['CCO', 'CCC', 'COOC']
 
 
         # --- Directory setup --- #
@@ -425,15 +425,15 @@ class Experimenter:
 
             # Setup model
             if uniform_indices is not None:
-                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, **model_params)
+                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, model_graphs=self.save_graphs, **model_params)
             elif unique_ids is not None:
                 unique_seeds = dataset_model.get_indices_from_ids(unique_ids[i]) # Get indices from unique_ids list for each replicate.
-                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=unique_seeds, **model_params)
+                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=unique_seeds, model_graphs=self.save_graphs, **model_params)
             else:
-                model_input = model_class(dataset_model_replicate, evaluator=evaluator, **model_params)
+                model_input = model_class(dataset_model_replicate, evaluator=evaluator, model_graphs=self.save_graphs, **model_params)
             model = Model(model=model_input)
             model.train()
-            
+
             # Save model
             if self.save_models is True:
                 model_file = os.path.join(models_directory, f"{model_name} Exp{i+1}.pkl")
@@ -446,6 +446,19 @@ class Experimenter:
                 result_dict.update(score_dict)
                 results_list.append(result_dict)
             
+            if self.save_graphs:
+                graphs = model.model_graphs()
+                for graph in graphs:
+                    graph.savefig(os.path.join(experiment_directory, f"{model_name}_graph_{i+1}.jpg"))
+
+            # Save model_datasets
+            model_datasets_dir = os.path.join(experiment_directory, f"model_datasets_rep_{i}")
+            os.makedirs(model_datasets_dir, exist_ok=True)
+            model_datasets = model.model_datasets
+            for index, model_dataset in enumerate(model_datasets):
+                model_dataset_file = os.path.join(model_datasets_dir, f"model_dataset_iteration_{index}.pkl")
+                model_dataset.save(model_dataset_file)
+
         # Convert results to a DataFrame 
         results_df = pd.DataFrame(results_list)
         results_name = exp_config['name'] + ".csv" # Name of the results file is the same as the experiment name.

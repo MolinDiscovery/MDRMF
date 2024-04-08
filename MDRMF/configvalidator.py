@@ -122,6 +122,9 @@ class ConfigValidator:
                 elif k == 'save_datasets':
                     if not isinstance(j, bool):
                         raise ValueError(f'\'{k}\' must be of type: bool. Eg. {k}: True')
+                elif k == 'save_graphs':
+                    if not isinstance(j, bool):
+                        raise ValueError(f'\'{k}\' must be of type: bool. Eg. {k}: True')
                 elif k == 'save_nothing':
                     if not isinstance(j, bool):
                         raise ValueError(f'{k} must be of type: bool. Eg. {k}: True')

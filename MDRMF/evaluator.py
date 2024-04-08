@@ -12,7 +12,7 @@ class Evaluator:
 
 
     def evaluate(self, model, eval_dataset, model_dataset):
-        self.dataset = eval_dataset.copy() #
+        self.dataset = eval_dataset.copy()
         results = {}
         for metric in self.metrics:
             if metric == "R2_model":

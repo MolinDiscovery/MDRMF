@@ -23,6 +23,7 @@ class RFModeller(Modeller):
         retrain=True,
         seeds=[],
         add_noise=None,
+        model_graphs=False,
         feature_importance_opt=None,
         use_pairwise=False,
         **kwargs) -> None:
@@ -37,7 +38,7 @@ class RFModeller(Modeller):
             retrain,
             seeds,
             add_noise,
-            )
+            model_graphs)
 
         self.kwargs = kwargs
         self.model = RandomForestRegressor(**self.kwargs)
@@ -102,7 +103,8 @@ class RFModeller(Modeller):
             iterations = iterations_in
 
         for i in range(iterations):
-        # Acquire new points
+
+            # Acquire new points
             acquired_pts = self._acquisition(model=self.model, model_dataset=self.model_dataset, add_noise=self.add_noise)
 
             self.model_dataset = self.dataset.merge_datasets([self.model_dataset, acquired_pts])
@@ -127,6 +129,9 @@ class RFModeller(Modeller):
 
         if feat_opt:
             print("\n")
+
+        if self.model_graphs:
+            self.graph_model()
 
         return self.model
     
@@ -227,25 +232,25 @@ class RFModeller(Modeller):
             logging.error(f"Unexpected error: {str(e)}")
             raise
     
-
-    def _acquisition_pairwise(self):
+    # Can probably be deleted.
+    # def _acquisition_pairwise(self):
         
-        preds = self.predict(self.dataset, self.model_dataset)
+    #     preds = self.predict(self.dataset, self.model_dataset)
 
-        if self.acquisition_method == "greedy":
+    #     if self.acquisition_method == "greedy":
 
-            # Find indices of the x-number of smallest values
-            indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
+    #         # Find indices of the x-number of smallest values
+    #         indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
 
-            # Get the best docked molecules from the dataset
-            acq_dataset = self.dataset.get_points(indices, remove_points=True)
+    #         # Get the best docked molecules from the dataset
+    #         acq_dataset = self.dataset.get_points(indices, remove_points=True)
 
-        if self.acquisition_method == "random":
+    #     if self.acquisition_method == "random":
             
-            # Get random points and delete from dataset
-            acq_dataset = self.dataset.get_samples(self.acquisition_size, remove_points=True)
+    #         # Get random points and delete from dataset
+    #         acq_dataset = self.dataset.get_samples(self.acquisition_size, remove_points=True)
 
-        return acq_dataset
+    #     return acq_dataset
 
 
     @staticmethod
@@ -299,28 +304,6 @@ class RFModeller(Modeller):
 
         return important_features
 
-        # --- Comments
-        # There should be an argument to RFModeller called ´feature_importance_opt´.
-        # This argument should take a dict.
-        # dict = {
-        #   'opt_iterations': 50
-        #   'opt_features_limit': 30
-        # }
-        # This list contain the number of times to train the optimization model and how many of the most important features to keep.
-        # For each run the ´feature_importances_´ is calculated. The index values are counted. So for instance
-        # 1. run index 55 is the most important feature
-        # 2. run index 55 is the 10th most important feature
-        # 3. run index 55 is the 5th most important feature
-        # Now we just average how much 55 was used. (1+10+5)/3 = 5.33
-        # We then just calculate an average for each index in the vector and sort them from lowest(best) to highest(worst).
-        # In the case of the above dict we only keep the 30 most important features in the vector.
-        # -----
-        # Now that I think about it we might not even need to do this averaging, as the numbers are kind of already
-        # averaged by merely running the model many times.
-        # -----
-        # Once the desired features have been found we need to set he dataset.X to the indexes that was found most important.
-        # I think we can do this by just manipulating self.dataset, but I am a little unsure if this will disturb other parts
-        # of the code. I don't think so, as we never return the Dataset at any time.
 
     def _print_progress_bar(self, iteration, total, bar_length=50, prefix="Progress"):
         """

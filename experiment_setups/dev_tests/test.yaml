@@ -1,11 +1,11 @@
 #test.yaml
-
-- Protocol_name: test
+- Protocol_name: PCA_test
 
 
 - save_models: False
-- save_datasets: False
-- save_nothing: True
+- save_datasets: True
+- save_graphs: True
+- save_nothing: False
 
 
 - unique_initial_sample:
@@ -14,14 +14,14 @@
 
 - Experiment:
     name: 01_RF_MQN
-    replicate: 3
+    replicate: 2
 
     dataset: datasets/dataset_mqn_shuffled.pkl
 
     model:
       name: RFModeller
       iterations: 5
-      acquisition_size: 20
+      acquisition_size: 100
       acquisition_method: greedy
       #add_noise: 20
 

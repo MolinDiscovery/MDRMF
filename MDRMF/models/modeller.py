@@ -1,6 +1,8 @@
+from cProfile import label
 import numpy as np
 import sys
 from scipy.stats import norm
+from MDRMF import model
 from MDRMF.dataset import Dataset
 
 class Modeller:
@@ -26,7 +28,8 @@ class Modeller:
             acquisition_method="greedy", 
             retrain=True,
             seeds=[],
-            add_noise=None) -> None:
+            add_noise=None,
+            model_graphs=False) -> None:
         """
         Initializes a Modeller object with the provided parameters.
         """        
@@ -40,7 +43,11 @@ class Modeller:
         self.retrain = retrain
         self.seeds = seeds
         self.add_noise = add_noise
+        self.model_graphs = model_graphs
+
         self.results = {}
+        self.figures = []
+        self.model_datasets = []
 
 
     def _initial_sampler(self, initial_sample_size):
@@ -265,7 +272,43 @@ class Modeller:
         Notes: Should always be called when defining the fit() in a child model.
         """
         results = self.evaluator.evaluate(self, self.eval_dataset, model_dataset)
-        print(f"Iteration {i+1}, Results: {results}")
 
+        print(f"Iteration {i+1}, Results: {results}")
         # Store results
         self.results[i+1] = results
+        self.model_datasets.append(model_dataset) # appends the model_dataset so it can be exported to the results folder.
+
+
+    def graph_model(self):
+        from matplotlib import pyplot as plt
+        from matplotlib.lines import Line2D  # Import for custom legend handles
+
+        dataset = self.dataset
+        model_dataset = self.model_dataset
+        
+        preds = self.predict(dataset)
+        preds_model = self.predict(model_dataset)
+        
+        fig, ax = plt.subplots(dpi=300)
+
+        # Plot the truth line and keep a reference to it for the legend, choose a preferred color
+        truth_line = ax.plot(dataset.y, dataset.y, label='Truth line', color='tab:red')  # Updated color
+        # Plot the scatter plots with small dots, choose colors you like
+        scatter1 = ax.scatter(dataset.y, preds, label='Unlabelled predictions', s=1, color='tab:purple')  # Updated color
+        scatter2 = ax.scatter(model_dataset.y, preds_model, label='Labelled Predictions', s=1, color='tab:cyan')  # Updated color
+
+        ax.set_xlabel('Truth')
+        ax.set_ylabel('Predictions')
+
+        # Create custom legend handles, adjust the truth line to not use a marker and use a solid line
+        legend_handles = [
+            Line2D([0], [0], color='tab:red', lw=2, label='Truth line'),  # Solid line for truth line
+            Line2D([0], [0], marker='o', color='w', markerfacecolor='tab:purple', markersize=10, label='Unlabelled predictions'),
+            Line2D([0], [0], marker='o', color='w', markerfacecolor='tab:cyan', markersize=10, label='Labelled Predictions'),
+        ]
+
+        # Add the custom legend handles to the legend
+        ax.legend(handles=legend_handles)
+
+        self.figures.append(fig)
+

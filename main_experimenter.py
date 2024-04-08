@@ -3,5 +3,5 @@
 from MDRMF.experimenter import Experimenter
 from MDRMF.dataset import Dataset
 
-exp = Experimenter("experiment_setups/structural_biology_presentation_140k.yaml")
+exp = Experimenter("experiment_setups/dev_tests/test.yaml")
 exp.conduct_all_experiments()

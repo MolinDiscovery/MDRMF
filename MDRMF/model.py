@@ -54,6 +54,14 @@ class Model:
             dict: A dictionary containing the results of the model's evaluations.
         """
         return self.model.results
+    
+    @property
+    def model_datasets(self):
+        return self.model.model_datasets
+
+
+    def model_graphs(self):
+        return self.model.figures
 
 
     def save(self, filename: str):
