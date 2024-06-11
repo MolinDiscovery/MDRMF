@@ -136,11 +136,14 @@ class ConfigValidator:
                 elif k == 'uniform_initial_sample':
                     if not isinstance(j, int):
                         raise ValueError(f'\'{k}\' must be of type: int')
+                elif k == 'results_path':
+                    if not isinstance(j, str):
+                        raise ValueError(f'\'{k}\' must be of type: str')                    
                 elif k == 'unique_initial_sample':
                     schema = self.load_schema('MDRMF/schemas/unique_initial_sample_schema.yaml')  
                     c = Core(source_data=i, schema_data=schema)
                     c.validate(raise_exception=True)
-                    if j.get('nudging') != None and len(i['unique_initial_sample']['nudging']) != 2:
+                    if j.get('nudging') != None and len(i['unique_initial_sample']['nudging']) != 3:
                         raise ValueError("The 'nudging' list must contain exactly two elements.")
                 elif k == 'Experiment':
                     schema = self.load_schema('MDRMF/schemas/Experiment_schema.yaml')

@@ -1,0 +1,152 @@
+- Protocol_name: (article) 21 noise tests (10k)
+
+- save_models: False
+- save_datasets: False
+- save_graphs: True
+
+- unique_initial_sample:
+    sample_size: 10
+
+
+- Experiment:
+    name: CDDD noise 05
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 0.5
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: CDDD noise 1
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 1
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: CDDD noise 2
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 2
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: CDDD noise 3
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 3
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: CDDD noise 4
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 4
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: CDDD noise 5
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 5
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: CDDD noise 10
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 10
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: CDDD noise 20
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 20
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]            

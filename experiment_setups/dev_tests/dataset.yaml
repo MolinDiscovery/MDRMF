@@ -1,7 +1,7 @@
 - Protocol_name: Datasets
 
 - create_dataset:
-    name: dataset_morgan1024
+    name: dataset_morgan
 
     data:
       datafile: 10K.csv

@@ -1,4 +1,4 @@
-- Protocol_name: structural_biology_presentation_10k
+- Protocol_name: 10k_top1_top5
 
 - save_models: False
 - save_datasets: False

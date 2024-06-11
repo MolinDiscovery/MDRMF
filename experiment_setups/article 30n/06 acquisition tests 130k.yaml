@@ -1,0 +1,91 @@
+- Protocol_name: (article) 06 acquisition tests (130k)
+
+- save_models: False
+- save_datasets: False
+- save_graphs: True
+- results_path: C:\Users\xsj110\OneDrive - University of Copenhagen\Master\02 AI Lab\43 article 30n
+
+- unique_initial_sample:
+    sample_size: 10
+
+
+- Experiment:
+    name: greedy
+    replicate: 30
+
+    dataset: datasets/DTP_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]
+
+
+- Experiment:
+    name: LCB
+
+    dataset: datasets/DTP_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: LCB
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]        
+
+
+- Experiment:
+    name: MU
+    replicate: 5
+
+    dataset: datasets/DTP_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: MU
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]
+
+
+- Experiment:
+    name: EI
+
+    dataset: datasets/DTP_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: EI
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]
+
+
+- Experiment:
+    name: random
+
+    dataset: datasets/DTP_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: random
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]

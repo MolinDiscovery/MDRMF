@@ -3,26 +3,26 @@
 
 
 - save_models: False
-- save_datasets: True
+- save_datasets: False
 - save_graphs: True
-- save_nothing: False
+- save_nothing: True
 
 
 - unique_initial_sample:
     sample_size: 10
-    nudging: [5, 100]
+
 
 - Experiment:
     name: 01_RF_MQN
-    replicate: 2
+    replicate: 5
 
-    dataset: datasets/dataset_mqn_shuffled.pkl
+    dataset: datasets/dataset_morgan_shuffled.pkl
 
     model:
       name: RFModeller
       iterations: 5
       acquisition_size: 100
-      acquisition_method: greedy
+      acquisition_method: tanimoto
       #add_noise: 20
 
     metrics:

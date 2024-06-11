@@ -1,0 +1,146 @@
+- Protocol_name: (article) 13 noise tests (10k)
+
+- save_models: False
+- save_datasets: False
+- save_graphs: True
+- results_path: C:\Users\xsj110\OneDrive - University of Copenhagen\Master\02 AI Lab\43 article 30n
+
+- unique_initial_sample:
+    sample_size: 10
+
+
+- Experiment:
+    name: noise 05
+    replicate: 30
+
+    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 0.5
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: noise 1
+
+    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 1
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: noise 2
+
+    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 2
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: noise 3
+
+    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 3
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: noise 4
+
+    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 4
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: noise 5
+
+    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 5
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: noise 10
+
+    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 10
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
+
+
+- Experiment:
+    name: noise 20
+
+    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 20
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]            

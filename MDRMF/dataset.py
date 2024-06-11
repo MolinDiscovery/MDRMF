@@ -4,8 +4,6 @@ from re import U
 import numpy as np
 import pickle
 
-from pyrsistent import get_in
-
 class Dataset:
 
     def __init__(self, X, y, ids=None, w=None, keep_unlabeled_data_only=False) -> None:
@@ -183,6 +181,21 @@ class Dataset:
 
 
     def shuffle(self):
+        """
+        Randomly shuffles the entries of the dataset.
+
+        This method uses a random permutation to shuffle the indices of the dataset, and then rearranges
+        the dataset's attributes (features `X`, labels `y`, identifiers `ids`, and weights `w`) according to the
+        shuffled indices. This is useful for randomizing the order of data points, which can be beneficial for
+        machine learning algorithms that are sensitive to the order of data points, such as mini-batch gradient descent.
+
+        Note:
+            The shuffling is performed in-place; the original dataset is modified.
+
+        Example:
+            >>> dataset.shuffle()
+            This will randomly rearrange the entries in `dataset`.
+        """        
         shuffle_indices = np.random.permutation(len(self.y))
 
         self.X = self.X[shuffle_indices]

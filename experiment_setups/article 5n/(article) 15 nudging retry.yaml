@@ -1,0 +1,25 @@
+- Protocol_name: (article) 27 Nudging test 5 (10K)
+
+- save_models: False
+- save_datasets: False
+- save_graphs: True
+
+- unique_initial_sample:
+    sample_size: 10
+    nudging: [5, 1, 50]
+
+- Experiment:
+    name: RF CDDD
+    replicate: 5
+
+    dataset: datasets/dataset_CDDD_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]

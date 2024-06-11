@@ -1,0 +1,122 @@
+- Protocol_name: (article) 02 descriptor tests (130K) - continued
+
+- save_models: False
+- save_datasets: False
+- save_graphs: True
+- results_path: C:\Users\xsj110\OneDrive - University of Copenhagen\Master\02 AI Lab\43 article 30n
+
+- unique_initial_sample:
+    sample_size: 10
+
+# - Experiment:
+#     name: morgan
+#     replicate: 30
+
+#     dataset: datasets/DTP_morgan_shuffled.pkl
+
+#     model:
+#         name: RFModeller
+#         iterations: 5
+#         acquisition_size: 20
+#         acquisition_method: greedy
+
+#     metrics: 
+#         names: [top-k, top-k-acquired]
+#         k: [1320]
+
+
+# - Experiment:
+#     name: MACCS
+
+#     dataset: datasets/DTP_MACCS_shuffled.pkl
+
+#     model:
+#         name: RFModeller
+#         iterations: 5
+#         acquisition_size: 20
+#         acquisition_method: greedy
+
+#     metrics: 
+#         names: [top-k, top-k-acquired]
+#         k: [1320]
+
+
+# - Experiment:
+#     name: avalon
+
+#     dataset: datasets/DTP_avalon_shuffled.pkl
+
+#     model:
+#         name: RFModeller
+#         iterations: 5
+#         acquisition_size: 20
+#         acquisition_method: greedy
+
+#     metrics: 
+#         names: [top-k, top-k-acquired]
+#         k: [1320]
+
+
+- Experiment:
+    name: rdk
+    replicate: 30
+
+    dataset: datasets/DTP_rdk_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]        
+
+
+- Experiment:
+    name: rdkit2D
+
+    dataset: datasets/DTP_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]                    
+
+
+- Experiment:
+    name: MQN
+
+    dataset: datasets/DTP_MQN_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]     
+
+
+- Experiment:
+    name: CDDD
+
+    dataset: datasets/DTP_CDDD_fix2_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]

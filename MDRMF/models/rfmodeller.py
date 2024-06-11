@@ -78,7 +78,8 @@ class RFModeller(Modeller):
         if self.add_noise is None:
             self.model_dataset = initial_pts
         else:
-            initial_pts.y = np.random.normal(initial_pts.y, self.add_noise)
+            noises = np.random.normal(0, self.add_noise, size=initial_pts.y.size)
+            initial_pts.y = initial_pts.y + noises
             self.model_dataset = initial_pts
 
         if not feat_opt:

@@ -21,6 +21,7 @@ class RFModellerPairwise(Modeller):
         acquisition_method="greedy",
         retrain=True,
         seeds=[],
+        model_graphs=False,
         feature_importance_opt=None,
         use_pairwise=True,
         **kwargs) -> None:
@@ -33,7 +34,8 @@ class RFModellerPairwise(Modeller):
             acquisition_size, 
             acquisition_method, 
             retrain,
-            seeds
+            seeds,
+            model_graphs
             )
 
         self.kwargs = kwargs

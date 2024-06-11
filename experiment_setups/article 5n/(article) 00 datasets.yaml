@@ -1,0 +1,101 @@
+- Protocol_name: (article) 00 datasets 140K
+
+
+- create_dataset:
+    name: DTP_MQN_shuffled
+    shuffle: True
+
+    data:
+      datafile: data_files/DTP_data_final_fix1.csv
+      SMILES_col: SMILES
+      scores_col: r_i_docking_score
+      ids_col: SMILES
+
+    featurizer:
+      name: mqn
+
+
+# - create_dataset:
+#     name: DTP_morgan_shuffled
+#     shuffle: True
+
+#     data:
+#       datafile: data_files/DTP_data_final_fix1.csv
+#       SMILES_col: SMILES
+#       scores_col: r_i_docking_score
+#       ids_col: SMILES
+
+#     featurizer:
+#       name: morgan
+#       nBits: 1024
+#       radius: 2
+
+
+# - create_dataset:
+#     name: DTP_MACCS_shuffled
+#     shuffle: True
+
+#     data:
+#       datafile: data_files/DTP_data_final_fix1.csv
+#       SMILES_col: SMILES
+#       scores_col: r_i_docking_score
+#       ids_col: SMILES
+
+#     featurizer:
+#       name: MACCS
+
+
+# - create_dataset:
+#     name: DTP_avalon_shuffled
+#     shuffle: True
+
+#     data:
+#       datafile: data_files/DTP_data_final_fix1.csv
+#       SMILES_col: SMILES
+#       scores_col: r_i_docking_score
+#       ids_col: SMILES
+
+#     featurizer:
+#       name: avalon
+
+
+# - create_dataset:
+#     name: DTP_rdk_shuffled
+#     shuffle: True
+
+#     data:
+#       datafile: data_files/DTP_data_final_fix1.csv
+#       SMILES_col: SMILES
+#       scores_col: r_i_docking_score
+#       ids_col: SMILES
+
+#     featurizer:
+#       name: rdk
+
+
+# - create_dataset:
+#     name: DTP_pharmacophore_shuffled
+#     shuffle: True
+
+#     data:
+#       datafile: data_files/DTP_data_final_fix1.csv
+#       SMILES_col: SMILES
+#       scores_col: r_i_docking_score
+#       ids_col: SMILES
+
+#     featurizer: 
+#       name: pharmacophore
+
+
+# - create_dataset:
+#     name: DTP_rdkit2D_shuffled
+#     shuffle: True
+
+#     data:
+#       datafile: data_files/DTP_data_final_fix1.csv
+#       SMILES_col: SMILES
+#       scores_col: r_i_docking_score
+#       ids_col: SMILES
+
+#     featurizer:
+#       name: rdkit2D

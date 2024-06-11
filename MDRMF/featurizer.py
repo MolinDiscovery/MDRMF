@@ -49,10 +49,9 @@ class Featurizer:
             'pharmacophore': self._generate_pharmacophore_fingerprint,
             'rdkit2D': self._generate_rdkit2D_fingerprint,
             'mqn': self._generate_mqn_fingerprint,
-            # ... add other methods here ...
+            # ... add other methods ...
         }
 
-        # Check if method is supported
         if method not in method_funcs:
             raise ValueError(f"Unsupported featurization method: {method}")
 

@@ -10,6 +10,7 @@ import datetime
 import uuid
 import json
 import atexit
+import matplotlib.pyplot as plt
 from typing import List
 from MDRMF.evaluator import Evaluator
 import MDRMF.models as mfm
@@ -27,6 +28,7 @@ class Experimenter:
         self.save_datasets = self.get_config_value(['save_datasets']) or False # Don't save datasets by default.
         self.save_nothing = self.get_config_value(['save_nothing']) or False # Save results by default, if True deletes all data after completion.
         self.save_graphs = self.get_config_value(['save_graphs']) or False # Don't save graphs by default.
+        self.results_path = self.get_config_value(['results_path']) or os.getcwd()
 
         # Validate the config file.
         validator = ConfigValidator()
@@ -37,7 +39,7 @@ class Experimenter:
         id = self.generate_id(self.protocol_name)
 
         # Setting up root directory
-        self.root_dir = id
+        self.root_dir = os.path.join(self.results_path, id)
         os.makedirs(self.root_dir, exist_ok=True)
     
         self.create_meta_data()
@@ -216,21 +218,23 @@ class Experimenter:
         Doing the nudging like now where we just sort and return indices
         for the sorted data will also require the working dataset to be sorted,
         which might not always be the case. Currently most datasets are sorted
-        by y though, but it can be a future problem.
+        by y though, but it can be a future problem. << This has been implemented now.
         '''
         
         if nudging != []:
             nudged_samples_size = int(unique_sample_size / 2)
             nudge_size = nudging[0]
-            nudge_top_n = nudging[1]
+            nudge_top_low = nudging[1]
+            nudge_top_high = nudging[2]
 
         if 'dataset' in exp_config:
             dataset_file = exp_config['dataset']
             dataset = Dataset.load(dataset_file)
             if nudging != []:
                 dataset.sort_by_y()
-                top_dataset = dataset.get_top_or_bottom(nudge_top_n)
-                _, random_top_indices = top_dataset.get_samples(nudge_size, return_indices=True)
+                #top_dataset = dataset.get_top_or_bottom(nudge_top_n)
+                #_, random_top_indices = top_dataset.get_samples(nudge_size, return_indices=True)
+                random_top_indices = np.random.randint(nudge_top_low, nudge_top_high, nudge_size)
                 n_non_top_indices = unique_sample_size-nudge_size
                 _, random_indices = dataset.get_samples(n_non_top_indices, return_indices=True)
                 indices = np.concatenate([random_top_indices, random_indices])
@@ -238,22 +242,36 @@ class Experimenter:
                 _, indices = dataset.get_samples(unique_sample_size, return_indices=True)
 
         elif 'data' in exp_config:
-            data_conf = exp_config['data']
-            datafile = data_conf['datafile']
-            SMILES = data_conf['SMILES_col']
-            scores = data_conf['scores_col']
-            ids = data_conf['ids_col']
-            data = MoleculeLoader(datafile, SMILES, scores).df
-            length = len(data)
+            dataset = self._get_or_create_dataset(exp_config)
             if nudging != []:
-                data.sort_values(by=[scores])
-                top_data = data.iloc[:nudge_top_n]
-                random_top_indices = np.random.randint(0, len(top_data), nudged_samples_size).tolist()
-                random_indices = np.random.randint(0, length, nudged_samples_size).tolist()
-
-                indices = random_top_indices + random_indices
+                dataset.sort_by_y()
+                #top_dataset = dataset.get_top_or_bottom(nudge_top_n)
+                #_, random_top_indices = top_dataset.get_samples(nudge_size, return_indices=True)
+                random_top_indices = np.random.randint(nudge_top_low, nudge_top_high, nudge_size)
+                n_non_top_indices = unique_sample_size-nudge_size
+                _, random_indices = dataset.get_samples(n_non_top_indices, return_indices=True)
+                indices = np.concatenate([random_top_indices, random_indices])
             else:
-                indices = np.random.randint(0, length, unique_sample_size).tolist()
+                _, indices = dataset.get_samples(unique_sample_size, return_indices=True)     
+
+            # data_conf = exp_config['data']
+            # datafile = data_conf['datafile']
+            # SMILES = data_conf['SMILES_col']
+            # scores = data_conf['scores_col']
+            # ids = data_conf['ids_col']
+            # data = MoleculeLoader(datafile, SMILES, scores).df
+            # length = len(data)
+            # if nudging != []:
+            #     data.sort_values(by=[scores])
+            #     random_top_indices = np.random.randint(nudge_top_low, nudge_top_high, nudge_size)
+            #     random_indices = np.random.randint(0, length, nudged_samples_size).tolist()
+
+            #     indices = random_top_indices + random_indices
+            # else:
+            #     indices = np.random.randint(0, length, unique_sample_size).tolist()
+
+            # # create dataset to allow id return.
+            # dataset = self._get_or_create_dataset(exp_config)
         
         '''Initially, this function returned indices. However, this possed a problem
         in the case where datasets were not sorted by y value. To fix this problem
@@ -305,8 +323,8 @@ class Experimenter:
                 nudging = []
             else:
                 ValueError('Problem reading nudge values. It must be a list consisting of how many samples to include\n'
-                           'and what top_n space to draw from. Like [5, 100]\n'
-                           'draws 5 random molecules from the top-100 best molecules.')
+                           'and what top_n space to draw from. Like [5, 100, 500]\n'
+                           'draws 5 random molecules from the 100-500 best molecules.')
                 
             replicates_first_exp = first_experiment_config['replicate']
 
@@ -450,7 +468,8 @@ class Experimenter:
                 graphs = model.model_graphs()
                 for graph in graphs:
                     graph.savefig(os.path.join(experiment_directory, f"{model_name}_graph_{i+1}.jpg"))
-
+                    plt.close(graph)
+                
             # Save model_datasets
             model_datasets_dir = os.path.join(experiment_directory, f"model_datasets_rep_{i}")
             os.makedirs(model_datasets_dir, exist_ok=True)
@@ -500,6 +519,9 @@ class Experimenter:
     def make_dataset(self, exp_config: dict):
         
         dataset = self._get_or_create_dataset(exp_config)
+        dataset_shuffle = exp_config['shuffle']
+        if dataset_shuffle == True:
+            dataset.shuffle()
 
         dataset_name = exp_config['name'] + '.pkl'
         dataset_file = os.path.join(self.root_dir, dataset_name)

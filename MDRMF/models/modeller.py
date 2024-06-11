@@ -90,7 +90,7 @@ class Modeller:
             # Get random points and delete from dataset
             acq_dataset = self.dataset.get_samples(self.acquisition_size, remove_points=True)
 
-        if self.acquisition_method == "tanimoto":
+        if self.acquisition_method == "tanimoto_hits":
 
             hit_feature_vectors = model_dataset.X
             pred_feature_vectors = self.dataset.X
@@ -99,7 +99,7 @@ class Modeller:
 
             for hit_index, hit_mol in enumerate(hit_feature_vectors):
                 
-                for pred_index, pred_mol in enumerate(pred_feature_vectors):
+                for pred_index, pred_mol in enumerate (pred_feature_vectors):
 
                     fp_hits = np.where(hit_mol == 1)[0]
                     fp_preds = np.where(pred_mol == 1)[0]
@@ -107,12 +107,37 @@ class Modeller:
                     common = set(fp_hits) & set(fp_preds)
                     combined = set(fp_hits) | set(fp_preds)
 
-                    similarity = len(common) / len (combined)
+                    similarity = len(common) / len(combined)
                     
                     arr[hit_index, pred_index] = similarity
             
             picks_idx = np.argsort(np.max(arr, axis=0))[::-1][:self.acquisition_size]
             
+            acq_dataset = self.dataset.get_points(list(picks_idx))
+
+        if self.acquisition_method == 'tanimoto':
+            
+            pred_feature_vectors = self.dataset.X
+
+            model_dataset.sort_by_y()
+            best_mol = model_dataset.X[0]
+
+            arr = np.zeros(len(pred_feature_vectors))
+
+            for pred_i, pred_mol in enumerate(pred_feature_vectors):
+                
+                fp_best = np.where(best_mol == 1)[0]
+                fp_preds = np.where(pred_mol == 1)[0]
+
+                common = set(fp_best) & set(fp_preds)
+                combined = set(fp_best) | set(fp_preds)
+
+                similarity = len(common) / len(combined)
+
+                arr[pred_i] = similarity
+
+            picks_idx = np.argsort(arr)[::-1][:self.acquisition_size]
+
             acq_dataset = self.dataset.get_points(list(picks_idx))
 
         if self.acquisition_method == "MU":
@@ -165,9 +190,10 @@ class Modeller:
             acq_dataset = self.dataset.get_points(indices, remove_points=True)
 
 
-        # Below we add noise to the acquired dataset to simulate real would lab data.
+        # Below we add noise to the acquired dataset to simulate real world lab data.
         if add_noise is not None:
-            acq_dataset.y = np.random.normal(acq_dataset.y, add_noise)
+            noises = np.random.normal(0, add_noise, size=acq_dataset.y.size)
+            acq_dataset.y = acq_dataset.y + noises
 
         return acq_dataset
     
