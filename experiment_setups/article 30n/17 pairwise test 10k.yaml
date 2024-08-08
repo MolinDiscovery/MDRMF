@@ -3,7 +3,7 @@
 - save_models: False
 - save_datasets: False
 - save_graphs: True
-- results_path: C:\Users\xsj110\OneDrive - University of Copenhagen\Master\02 AI Lab\43 article 30n
+# - results_path: C:\Users\xsj110\OneDrive - University of Copenhagen\Master\02 AI Lab\43 article 30n
 
 # - unique_initial_sample:
 #     sample_size: 10
