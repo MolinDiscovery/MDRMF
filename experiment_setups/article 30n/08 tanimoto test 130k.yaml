@@ -1,4 +1,4 @@
-- Protocol_name: (article) 08 tanimoto tests (130k)
+- Protocol_name: (article) 08 tanimoto tests (130k) - fixed no remove
 
 - save_models: False
 - save_datasets: False
@@ -11,7 +11,7 @@
 
 - Experiment:
     name: morgan tanimoto
-    replicate: 30
+    replicate: 2
 
     dataset: datasets/DTP_morgan_shuffled.pkl
 

@@ -42,8 +42,8 @@ class Model:
         return self.model.predict(dataset)
 
 
-    def get_acquired_points(self, unlabeled_dataset):
-        return self.model.unlabeled_acquisition(self.model, unlabeled_dataset)
+    def get_acquired_points(self, unlabeled_dataset, labeled_dataset):
+        return self.model.unlabeled_acquisition(self.model, unlabeled_dataset, labeled_dataset)
 
     @property
     def results(self):

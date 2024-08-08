@@ -138,7 +138,7 @@ class Modeller:
 
             picks_idx = np.argsort(arr)[::-1][:self.acquisition_size]
 
-            acq_dataset = self.dataset.get_points(list(picks_idx))
+            acq_dataset = self.dataset.get_points(list(picks_idx), remove_points=True)
 
         if self.acquisition_method == "MU":
             # MU stands for most uncertainty.
@@ -198,7 +198,7 @@ class Modeller:
         return acq_dataset
     
     
-    def unlabeled_acquisition(self, model, dataset):
+    def unlabeled_acquisition(self, model, dataset, dataset_labeled):
         """
         Performs the acquisition step to select new points for testing.
 
@@ -209,12 +209,13 @@ class Modeller:
             Dataset: The acquired dataset containing the selected points.
         """
         # Predict on the full dataset
-        preds = model.predict(dataset)
+        preds = self.predict(dataset)
+        
 
         if self.acquisition_method == "greedy":
 
             # Find indices of the x-number of smallest values
-            indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
+            indices = np.argpartition(-preds, self.acquisition_size)[:self.acquisition_size]
 
             # Get the best docked molecules from the dataset
             acq_dataset = dataset.get_points(indices, remove_points=False, unlabeled=True)
@@ -223,6 +224,31 @@ class Modeller:
             
             # Get random points
             acq_dataset = dataset.get_samples(self.acquisition_size, remove_points=False, unlabeled=True)
+
+        if self.acquisition_method == 'tanimoto':
+            
+            pred_feature_vectors = dataset.X
+
+            dataset_labeled.sort_by_y(ascending=False)
+            best_mol = dataset_labeled.X[0]
+
+            arr = np.zeros(len(pred_feature_vectors))
+
+            for pred_i, pred_mol in enumerate(pred_feature_vectors):
+                
+                fp_best = np.where(best_mol == 1)[0]
+                fp_preds = np.where(pred_mol == 1)[0]
+
+                common = set(fp_best) & set(fp_preds)
+                combined = set(fp_best) | set(fp_preds)
+
+                similarity = len(common) / len(combined)
+
+                arr[pred_i] = similarity
+
+            picks_idx = np.argsort(arr)[::-1][:self.acquisition_size]
+
+            acq_dataset = dataset.get_points(list(picks_idx), remove_points=False, unlabeled=True)            
 
         return acq_dataset
 

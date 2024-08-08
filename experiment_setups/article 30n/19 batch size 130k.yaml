@@ -1,0 +1,43 @@
+- Protocol_name: (article) 17 batch size tests (130K)
+
+- save_models: False
+- save_datasets: False
+- save_graphs: True
+- results_path: C:\Users\xsj110\OneDrive - University of Copenhagen\Master\02 AI Lab\43 article 30n
+
+- unique_initial_sample:
+    sample_size: 10
+
+
+- Experiment:
+    name: Batch Size 20
+    replicate: 30
+
+    dataset: datasets/DTP_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]                    
+
+
+- Experiment:
+    name: Batch size 10
+    replicate: 30
+
+    dataset: datasets/DTP_rdkit2D_shuffled.pkl
+
+    model:
+        name: RFModeller
+        iterations: 10
+        acquisition_size: 10
+        acquisition_method: greedy
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]                            

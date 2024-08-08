@@ -29,11 +29,13 @@ mapping:
                         type: str
             featurizer:
                 type: map
+                allowempty: True
                 mapping:
                     name:
                         type: str
             model:
                 type: map
+                allowempty: True
                 mapping:
                     name:
                         type: str

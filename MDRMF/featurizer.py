@@ -71,9 +71,15 @@ class Featurizer:
         pharm_factory = Gobbi_Pharm2D.factory
         return Generate.Gen2DFingerprint(mol, pharm_factory)
     
+    
     def _generate_rdkit2D_fingerprint(self, mol, **kwargs):
         rdkit2D_descriptors = MoleculeDescriptors.MolecularDescriptorCalculator([x[0] for x in Descriptors.descList])
-        return rdkit2D_descriptors.CalcDescriptors(mol)
+        descriptors = np.array(rdkit2D_descriptors.CalcDescriptors(mol))
+        # Replace NaN values with the mean of the respective descriptor
+        mean_values = np.nanmean(descriptors)
+        descriptors = np.where(np.isnan(descriptors), mean_values, descriptors)
+        return descriptors
+
     
     def _generate_mqn_fingerprint(self, mol, **kwargs):
         return rdMolDescriptors.MQNs_(mol)

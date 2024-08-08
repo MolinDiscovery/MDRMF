@@ -512,9 +512,19 @@ class Experimenter:
         
         model = Model(model=model_input)
         model.train()
-        acquired_points = model.get_acquired_points(dataset_unlabeled)
-        print(acquired_points)
 
+        # --- Directory setup --- #
+        experiment_directory = os.path.join(self.root_dir, exp_config['name'])
+        os.makedirs(experiment_directory, exist_ok=True)
+
+        acquired_points = model.get_acquired_points(dataset_unlabeled, dataset_labeled)
+        
+        # Save model_datasets
+        model_datasets_dir = os.path.join(experiment_directory, f"model_dataset")
+        os.makedirs(model_datasets_dir, exist_ok=True)
+        model_dataset_file = os.path.join(model_datasets_dir, f"acquired_points.pkl")
+        acquired_points.save(model_dataset_file)
+        print(acquired_points)
 
     def make_dataset(self, exp_config: dict):
         
