@@ -2,14 +2,16 @@ import os
 import sys
 import yaml
 from pykwalify.core import Core
-from MDRMF import Dataset
 
+if sys.version_info >= (3, 7):
+    from importlib.resources import read_text
+else:
+    from pkg_resources import resource_string
 
 class ConfigValidator:
     
     def __init__(self) -> None:
         pass
-
 
     def load_yaml(self, file_path):
         """
@@ -30,10 +32,13 @@ class ConfigValidator:
         return config
     
 
-    def load_schema(self, file):
-        """Load and return the YAML schema from the specified file."""
-        with open(file, 'r') as file:
-            return yaml.safe_load(file)
+    def load_schema(self, schema_name):
+        """Load and return the YAML schema from within the package."""
+        if sys.version_info >= (3, 7):
+            schema = read_text('MDRMF.schemas', schema_name)
+        else:
+            schema = resource_string('MDRMF.schemas', schema_name).decode('utf-8')
+        return yaml.safe_load(schema)
 
 
     def check_for_exps(self, config):
@@ -140,13 +145,13 @@ class ConfigValidator:
                     if not isinstance(j, str):
                         raise ValueError(f'\'{k}\' must be of type: str')                    
                 elif k == 'unique_initial_sample':
-                    schema = self.load_schema('MDRMF/schemas/unique_initial_sample_schema.yaml')  
+                    schema = self.load_schema('unique_initial_sample_schema.yaml')  
                     c = Core(source_data=i, schema_data=schema)
                     c.validate(raise_exception=True)
                     if j.get('nudging') != None and len(i['unique_initial_sample']['nudging']) != 3:
                         raise ValueError("The 'nudging' list must contain exactly two elements.")
                 elif k == 'Experiment':
-                    schema = self.load_schema('MDRMF/schemas/Experiment_schema.yaml')
+                    schema = self.load_schema('Experiment_schema.yaml')
                     c = Core(source_data=i, schema_data=schema)
                     c.validate(raise_exception=True)
 
@@ -169,7 +174,7 @@ class ConfigValidator:
                             raise ValueError(f"You must provide a featurizer when providing a csv file!")
                     
                 elif k == 'labelExperiment':
-                    schema = self.load_schema('MDRMF/schemas/labelExperiment_schema.yaml')
+                    schema = self.load_schema('labelExperiment_schema.yaml')
                     c = Core(source_data=i, schema_data=schema)
                     c.validate(raise_exception=True)
 
@@ -194,7 +199,7 @@ class ConfigValidator:
                                              "featurizer:\n"
                                              "  name: rdkit2D\n")
                 elif k == 'create_dataset':
-                    schema = self.load_schema('MDRMF/schemas/create_dataset_schema.yaml')
+                    schema = self.load_schema('create_dataset_schema.yaml')
                     c = Core(source_data=i, schema_data=schema)
                     c.validate(raise_exception=True)
 
