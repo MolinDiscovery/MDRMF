@@ -161,14 +161,45 @@ class RFModellerPairwise(Modeller):
 
     
     def _pairwise_predict(self, train_dataset: Dataset, predict_dataset: Dataset, model: RandomForestRegressor):
-        n1 = predict_dataset.X.shape[0]
-        n2 = train_dataset.X.shape[0]
+        
+        # Split up prediction if dataset size is greater than 10k.
+        dataset_size = predict_dataset.y.shape[0]
+        batch_size = 10000
 
-        X1X2 = self.PADRE_features(predict_dataset.X, train_dataset.X)
-        y1_minus_y2_hat = model.predict(X1X2)
-        y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
-        mu = y1_hat_distribution.mean(axis=1)
-        #std = y1_hat_distribution.std(axis=1)
+        if dataset_size > batch_size:
+            
+            # Split prediction dataset into batches of 10k and less for the last one.
+            split_datasets = []
+            for i in range(0, dataset_size, batch_size):
+                end_index = min(i + batch_size, dataset_size)
+                indices = list(range(i, end_index))
+                batch_dataset = predict_dataset.get_points(indices)
+                split_datasets.append(batch_dataset)
+
+            # Predict on each of the prediction datasets
+            n2 = train_dataset.X.shape[0]
+
+            mu_list = []
+            for split_set in split_datasets:
+                n1 = split_set.X.shape[0]
+                X1X2 = self.PADRE_features(split_set.X, train_dataset.X)
+                y1_minus_y2_hat = model.predict(X1X2)
+                y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
+                mu = y1_hat_distribution.mean(axis=1)
+                mu_list.append(mu)
+
+            mu = np.concatenate(mu_list)
+
+        else:
+            n1 = predict_dataset.X.shape[0]
+            n2 = train_dataset.X.shape[0]
+
+            X1X2 = self.PADRE_features(predict_dataset.X, train_dataset.X)
+            y1_minus_y2_hat = model.predict(X1X2)
+            y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
+            mu = y1_hat_distribution.mean(axis=1)
+            #std = y1_hat_distribution.std(axis=1)
+        
         return mu
     
 
@@ -325,7 +356,7 @@ class RFModellerPairwise(Modeller):
         sys.stdout.write(f"\r{prefix}: [{arrow + spaces}] {int(progress * 100)}% ({iteration}/{total})")
         sys.stdout.flush()
 
-
+# PADRE functions
     def PADRE_features(self, X1, X2):
         n1 = X1.shape[0]
         n2 = X2.shape[0]
