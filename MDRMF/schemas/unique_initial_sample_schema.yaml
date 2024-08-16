@@ -12,3 +12,4 @@ mapping:
                 type: seq
                 sequence:
                 - type: int
+                

@@ -150,6 +150,8 @@ class ConfigValidator:
                     c.validate(raise_exception=True)
                     if j.get('nudging') != None and len(i['unique_initial_sample']['nudging']) != 3:
                         raise ValueError("The 'nudging' list must contain exactly two elements.")
+                elif k == 'retrieve_initial_sample':
+                    pass
                 elif k == 'Experiment':
                     schema = self.load_schema('Experiment_schema.yaml')
                     c = Core(source_data=i, schema_data=schema)

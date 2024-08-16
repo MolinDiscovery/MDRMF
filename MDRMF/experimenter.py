@@ -29,6 +29,7 @@ class Experimenter:
         self.save_nothing = self.get_config_value(['save_nothing']) or False # Save results by default, if True deletes all data after completion.
         self.save_graphs = self.get_config_value(['save_graphs']) or False # Don't save graphs by default.
         self.results_path = self.get_config_value(['results_path']) or os.getcwd()
+        self.retrieve_initial_sample = self.get_config_value(['retrieve_initial_sample'])
 
         # Validate the config file.
         validator = ConfigValidator()
