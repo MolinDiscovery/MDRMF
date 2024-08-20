@@ -11,5 +11,12 @@ mapping:
             nudging:
                 type: seq
                 sequence:
-                - type: int
+                    - type: int
+            seeds:
+                type: seq
+                sequence:
+                    - type: seq
+                      sequence:
+                          - type: any
+
                 

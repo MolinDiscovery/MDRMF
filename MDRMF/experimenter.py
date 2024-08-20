@@ -24,12 +24,12 @@ class Experimenter:
         self.experiments = self._load_config()
         self.uniform_initial_sample = self.get_config_value(['uniform_initial_sample']) or None
         self.unique_initial_sample = self.get_config_value(['unique_initial_sample', 'sample_size']) or None
+        self.unique_initial_seeds = self.get_config_value(['unique_initial_sample', 'seeds']) or None
         self.save_models = self.get_config_value(['save_models']) or False # Don't save models by default.
         self.save_datasets = self.get_config_value(['save_datasets']) or False # Don't save datasets by default.
         self.save_nothing = self.get_config_value(['save_nothing']) or False # Save results by default, if True deletes all data after completion.
         self.save_graphs = self.get_config_value(['save_graphs']) or False # Don't save graphs by default.
         self.results_path = self.get_config_value(['results_path']) or os.getcwd()
-        self.retrieve_initial_sample = self.get_config_value(['retrieve_initial_sample'])
 
         # Validate the config file.
         validator = ConfigValidator()
@@ -309,7 +309,7 @@ class Experimenter:
         unique_ids_list = None
 
         # if user inputs a unique_initial_sample use this to 'seed' the model.
-        if self.unique_initial_sample is not None:
+        if self.unique_initial_sample is not None and self.unique_initial_seeds is None:
 
             # Assuming the first experiment configuration is representative for the initial unique sample
             first_experiment_config = next((exp.get('Experiment', {}) for exp in self.experiments[0] if 'Experiment' in exp), {})
@@ -317,7 +317,7 @@ class Experimenter:
             # Get the nudge values if they are defined.
             nudge_value = self.get_config_value(['unique_initial_sample', 'nudging'])
 
-            # If nudge_value is not None, it must be a list of two values.
+            # If nudge_value is not None, it must be a list of three values.
             if isinstance(nudge_value, list):
                 nudging = nudge_value
             elif nudge_value == None:
@@ -337,6 +337,9 @@ class Experimenter:
                 # Calculate unique indices
                 unique_ids = self._calculate_unique_ids(first_experiment_config, self.unique_initial_sample, nudging)
                 unique_ids_list.append(unique_ids)
+
+        elif self.unique_initial_seeds is not None: # if a list of seeds was provided, use this.
+            unique_ids_list = self.unique_initial_seeds
 
         '''
         End creating unique initial sample.
@@ -447,6 +450,8 @@ class Experimenter:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, model_graphs=self.save_graphs, **model_params)
             elif unique_ids is not None:
                 unique_seeds = dataset_model.get_indices_from_ids(unique_ids[i]) # Get indices from unique_ids list for each replicate.
+                print('Seeds: ', unique_ids[i])
+                print('Indices: ', unique_seeds)
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=unique_seeds, model_graphs=self.save_graphs, **model_params)
             else:
                 model_input = model_class(dataset_model_replicate, evaluator=evaluator, model_graphs=self.save_graphs, **model_params)

@@ -55,10 +55,10 @@ class RFModellerPairwise(Modeller):
         else:
             feat_opt = False
 
-        # Seed handling
+        # Seeds handling
         if self.seeds is None or len(self.seeds) == 0:
             initial_pts = self._initial_sampler(initial_sample_size=self.initial_sample_size)
-        elif isinstance(self.seeds, (list, np.ndarray)) and all(isinstance(i, int) for i in self.seeds):
+        elif isinstance(self.seeds, (list, np.ndarray)) and all(np.issubdtype(type(i), np.integer) for i in self.seeds):
             self.seeds = list(self.seeds)  # Ensure seeds is a list
             if feat_opt == True:
                 initial_pts = self.dataset.get_points(self.seeds)
@@ -66,7 +66,7 @@ class RFModellerPairwise(Modeller):
                 initial_pts = self.dataset.get_points(self.seeds, remove_points=True)
         else:
             logging.error("Invalid seeds. Must be a list or ndarray of integers, or None.")
-            return
+            return        
 
         self.model_dataset = initial_pts # hot-fix solution.
         '''
