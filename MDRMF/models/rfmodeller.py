@@ -188,10 +188,10 @@ class RFModeller(Modeller):
             sys.exit()
 
         def pred_with_uncertainty(X, rfr):
-            preds = np.zeros((len(dataset.y), len(rfr.estimators_)))
+            preds = np.zeros((len(X), len(rfr.estimators_)))
             for j, submodel in enumerate(rfr.estimators_):
                 preds[:,j] = submodel.predict(X)
-            return np.mean(preds, axis=1), np.var(preds, axis=1)        
+            return np.mean(preds, axis=1), np.var(preds, axis=1)
 
         # If the user wants the uncertainty on the predictions this code is executed.
         if return_uncertainty:
@@ -232,26 +232,6 @@ class RFModeller(Modeller):
         except Exception as e:
             logging.error(f"Unexpected error: {str(e)}")
             raise
-    
-    # Can probably be deleted.
-    # def _acquisition_pairwise(self):
-        
-    #     preds = self.predict(self.dataset, self.model_dataset)
-
-    #     if self.acquisition_method == "greedy":
-
-    #         # Find indices of the x-number of smallest values
-    #         indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
-
-    #         # Get the best docked molecules from the dataset
-    #         acq_dataset = self.dataset.get_points(indices, remove_points=True)
-
-    #     if self.acquisition_method == "random":
-            
-    #         # Get random points and delete from dataset
-    #         acq_dataset = self.dataset.get_samples(self.acquisition_size, remove_points=True)
-
-    #     return acq_dataset
 
 
     @staticmethod
