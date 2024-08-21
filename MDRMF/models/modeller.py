@@ -44,6 +44,7 @@ class Modeller:
         self.model_graphs = model_graphs
         self.feature_importance_opt = feature_importance_opt
         self.use_pairwise=use_pairwise
+        self.kwargs = kwargs
 
         self.results = {}
         self.figures = []
@@ -66,7 +67,7 @@ class Modeller:
         return random_points
 
 
-    def _acquisition(self, model, model_dataset, add_noise: int = 0.1):
+    def _acquisition(self, model_dataset, add_noise: int = 0.1):
         """
         Performs the acquisition step to select new points for the model.
 
@@ -77,11 +78,9 @@ class Modeller:
             Dataset: The acquired dataset containing the selected points.
         """
 
-        # Predict on the full dataset
-        # preds = model.predict(self.dataset.X)
-        preds, uncertainty = self.predict(self.dataset, self.model_dataset, return_uncertainty=True)
-
         if self.acquisition_method == "greedy":
+
+            preds = self.predict(self.dataset, self.model_dataset)
 
             # Find indices of the x-number of smallest values
             indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
@@ -93,31 +92,6 @@ class Modeller:
             
             # Get random points and delete from dataset
             acq_dataset = self.dataset.get_samples(self.acquisition_size, remove_points=True)
-
-        if self.acquisition_method == "tanimoto_hits":
-
-            hit_feature_vectors = model_dataset.X
-            pred_feature_vectors = self.dataset.X
-
-            arr = np.zeros((len(hit_feature_vectors), len(pred_feature_vectors)))
-
-            for hit_index, hit_mol in enumerate(hit_feature_vectors):
-                
-                for pred_index, pred_mol in enumerate (pred_feature_vectors):
-
-                    fp_hits = np.where(hit_mol == 1)[0]
-                    fp_preds = np.where(pred_mol == 1)[0]
-
-                    common = set(fp_hits) & set(fp_preds)
-                    combined = set(fp_hits) | set(fp_preds)
-
-                    similarity = len(common) / len(combined)
-                    
-                    arr[hit_index, pred_index] = similarity
-            
-            picks_idx = np.argsort(np.max(arr, axis=0))[::-1][:self.acquisition_size]
-            
-            acq_dataset = self.dataset.get_points(list(picks_idx))
 
         if self.acquisition_method == 'tanimoto':
             
@@ -145,6 +119,8 @@ class Modeller:
             acq_dataset = self.dataset.get_points(list(picks_idx), remove_points=True)
 
         if self.acquisition_method == "MU":
+
+            _, uncertainty = self.predict(self.dataset, self.model_dataset, return_uncertainty=True)
             # MU stands for most uncertainty.
 
             # Finds the indices with the highest uncertainty.
@@ -153,6 +129,7 @@ class Modeller:
             acq_dataset = self.dataset.get_points(indices, remove_points=True)
 
         if self.acquisition_method == 'LCB':
+            preds, uncertainty = self.predict(self.dataset, self.model_dataset, return_uncertainty=True)
             # LCB stands for Lower Confidence Bound.
             
             # Calculate the LCB score for each point.
@@ -166,6 +143,7 @@ class Modeller:
             acq_dataset = self.dataset.get_points(indices, remove_points=True)
 
         if self.acquisition_method == "EI":
+            preds, uncertainty = self.predict(self.dataset, self.model_dataset, return_uncertainty=True)
             # Find indices of the x-number of smallest values
             low_pred_indices = np.argpartition(preds, self.acquisition_size)[:self.acquisition_size]
 
@@ -181,8 +159,9 @@ class Modeller:
             final_indices = low_pred_indices[ei_sorted_indices][:self.acquisition_size]
 
             acq_dataset = self.dataset.get_points(final_indices, remove_points=True)
-
+ 
         if self.acquisition_method == "TS":
+            preds, uncertainty = self.predict(self.dataset, self.model_dataset, return_uncertainty=True)
             # TS stands for Thompson Sampling.
 
             # Sample from the predictive distribution
@@ -337,7 +316,7 @@ class Modeller:
         for i in range(iterations):
 
             # Acquire new points
-            acquired_pts = self._acquisition(model=self.model, model_dataset=self.model_dataset, add_noise=self.add_noise)
+            acquired_pts = self._acquisition(model_dataset=self.model_dataset, add_noise=self.add_noise)
 
             self.model_dataset = self.dataset.merge_datasets([self.model_dataset, acquired_pts])
 
@@ -379,16 +358,22 @@ class Modeller:
                 preds, uncertainty = self._pairwise_predict(dataset_train, dataset, self.engine)
             else:
                 try:
-                    preds, uncertainty = self.engine.predict(dataset)
+                    preds, uncertainty = self.engine.predict(dataset.X)
                     if uncertainty is None:
-                        raise NotImplementedError('Uncertainty is not implemented for this model')
+                        raise NotImplementedError('Uncertainty is not implemented for this model.'
+                                                  ' This probably means you cannot use this engine with the chosen acquisition functon.')
                 except NotImplementedError as e:
                     raise e
         else:
             if self.use_pairwise:
                 preds, _ = self._pairwise_predict(dataset_train, dataset, self.engine)
             else:
-                self.engine.predict(dataset.X)
+                preds, _ = self.engine.predict(dataset.X)
+        
+        if return_uncertainty:
+            return preds, uncertainty
+        else:
+            return preds
 
 
     def _pairwise_predict(self, train_dataset: Dataset, predict_dataset: Dataset, engine: Engine):
@@ -586,5 +571,5 @@ class Modeller:
         return mu, std
     
 dataset = Dataset.load('/Users/jacobmolinnielsen/dev/MDRMF-project/datasets/dataset_mqn_shuffled.pkl')
-modeller = Modeller(dataset)
-
+modeller = Modeller(dataset, engine='MLP', acquisition_method='greedy')
+modeller.fit()
