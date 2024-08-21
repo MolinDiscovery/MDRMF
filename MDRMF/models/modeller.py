@@ -6,25 +6,16 @@ import logging
 import pickle
 import os
 from scipy.stats import norm
-from MDRMF import model
+from typing import Dict
 from MDRMF.dataset import Dataset
+from MDRMF.models.engine import Engine
 
 class Modeller:
-    """
-    Base class to construct other models from
-    
-    Parameters:
-        dataset (Dataset): The dataset object containing the data.
-        evaluator (Evaluator): The evaluator object used to evaluate the model's performance.
-        iterations (int): The number of iterations to perform.
-        initial_sample_size (int): The number of initial samples to randomly select from the dataset.
-        acquisition_size (int): The number of points to acquire in each iteration.
-        acquisition_method (str): The acquisition method to use, either "greedy" or "random".
-        retrain (bool): Flag indicating whether to retrain the model in each iteration.
-    """
+
     def __init__(
             self,
-            dataset, 
+            dataset,
+            engine="RF",
             evaluator=None, 
             iterations=10, 
             initial_sample_size=10, 
@@ -35,10 +26,11 @@ class Modeller:
             add_noise=None,
             model_graphs=False,
             feature_importance_opt=None,
-            use_pairwise=False) -> None:
-        """
-        Initializes a Modeller object with the provided parameters.
-        """        
+            use_pairwise=False,
+            **kwargs) -> None:
+        
+        self.engine_name = engine # used for a retraining later
+        self.engine = Engine(self.engine_name, **kwargs)
         self.dataset = dataset.copy()
         self.eval_dataset = dataset.copy()
         self.evaluator = evaluator
@@ -50,10 +42,16 @@ class Modeller:
         self.seeds = seeds
         self.add_noise = add_noise
         self.model_graphs = model_graphs
+        self.feature_importance_opt = feature_importance_opt
+        self.use_pairwise=use_pairwise
 
         self.results = {}
         self.figures = []
         self.model_datasets = []
+
+        if self.feature_importance_opt is not None:
+            self.optimize_for_feature_importance(self.feature_importance_opt)
+            self.dataset = self.eval_dataset.copy() # this is a hot-fix solution        
 
 
     def _initial_sampler(self, initial_sample_size):
@@ -288,9 +286,6 @@ class Modeller:
 
 
     def fit(self, iterations_in=None):
-        """
-        Fits the RFModeller.
-        """
 
         if iterations_in is not None:
             feat_opt = True
@@ -325,9 +320,9 @@ class Modeller:
         if self.use_pairwise:
             initial_pts_pairwise = initial_pts.create_pairwise_dataset()
 
-            self.model.fit(initial_pts_pairwise.X, initial_pts_pairwise.y)
+            self.engine.fit(initial_pts_pairwise.X, initial_pts_pairwise.y)
         else:
-            self.model.fit(self.model_dataset.X, self.model_dataset.y)
+            self.engine.fit(self.model_dataset.X, self.model_dataset.y)
 
         # First evaluation, using only the initial points
         if self.evaluator is not None and feat_opt is False:
@@ -348,14 +343,14 @@ class Modeller:
 
             # Reset model before training if true
             if self.retrain:
-                self.model = RandomForestRegressor(**self.kwargs)
+                self.engine = self.engine = Engine(self.engine_name, **self.kwargs)
             
             # fits the model using a pairwise dataset or normal dataset
             if self.use_pairwise:
                 model_dataset_pairwise = self.model_dataset.create_pairwise_dataset()
-                self.model.fit(model_dataset_pairwise.X, model_dataset_pairwise.y)
+                self.engine.fit(model_dataset_pairwise.X, model_dataset_pairwise.y)
             else:
-                self.model.fit(self.model_dataset.X, self.model_dataset.y)
+                self.engine.fit(self.model_dataset.X, self.model_dataset.y)
 
             # Call evaluator if true
             if self.evaluator is not None and feat_opt is False:
@@ -370,15 +365,66 @@ class Modeller:
         if self.model_graphs:
             self.graph_model()
 
-        return self.model
+        return self.engine
 
 
-    def predict():
-        """
-        Generates predictions using the fitted model.
-        This method needs to be implemented in child classes.
-        """        
-        pass
+    def predict(self, dataset: Dataset, dataset_train: Dataset = None, return_uncertainty = False):
+
+        if isinstance(dataset, Dataset) is False or isinstance(dataset_train, Dataset) is False:
+            logging.error("Wrong object type. Must be of type `Dataset`")
+            sys.exit()
+
+        if return_uncertainty:
+            if self.use_pairwise:
+                preds, uncertainty = self._pairwise_predict(dataset_train, dataset, self.engine)
+            else:
+                try:
+                    preds, uncertainty = self.engine.predict(dataset)
+                    if uncertainty is None:
+                        raise NotImplementedError('Uncertainty is not implemented for this model')
+                except NotImplementedError as e:
+                    raise e
+        else:
+            if self.use_pairwise:
+                preds, _ = self._pairwise_predict(dataset_train, dataset, self.engine)
+            else:
+                self.engine.predict(dataset.X)
+
+
+    def _pairwise_predict(self, train_dataset: Dataset, predict_dataset: Dataset, engine: Engine):
+        n1 = predict_dataset.X.shape[0]
+        n2 = train_dataset.X.shape[0]
+
+        X1X2 = self.PADRE_features(predict_dataset.X, train_dataset.X)
+        y1_minus_y2_hat = engine.predict(X1X2)
+        y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
+        mu = y1_hat_distribution.mean(axis=1)
+        std = y1_hat_distribution.std(axis=1)
+        return mu, std
+
+
+    def optimize_for_feature_importance(self, opt_parameters: Dict):
+
+        print('Computing feature importance...')
+
+        iterations = opt_parameters['iterations']
+        features_limit = opt_parameters['features_limit']
+    
+        model = self.fit(iterations_in=iterations)
+
+        feature_importances = model.feature_importances_
+        feature_importances_sorted = np.argsort(feature_importances)[:-1]
+        important_features = feature_importances_sorted[-features_limit:]
+
+        self.dataset.X = self.dataset.X[:, important_features]
+        self.eval_dataset.X = self.eval_dataset.X[:, important_features]
+
+        # important_feature_values = feature_importances[important_features]
+        # print(f"values of most important features: {important_feature_values}")
+        
+        print(f"Indices of most important features: {important_features} \n")
+
+        return important_features
 
 
     def call_evaluator(self, i, model_dataset):
@@ -538,3 +584,7 @@ class Modeller:
         mu = y1_hat_distribution.mean(axis=1)
         std = y1_hat_distribution.std(axis=1)
         return mu, std
+    
+dataset = Dataset.load('/Users/jacobmolinnielsen/dev/MDRMF-project/datasets/dataset_mqn_shuffled.pkl')
+modeller = Modeller(dataset)
+

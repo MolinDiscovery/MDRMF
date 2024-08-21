@@ -2,18 +2,30 @@
 import numpy as np
 
 class Engine:
+    """
+    A class used to represent a Machine Learning Engine.
 
-    def __init__(
-            self, 
-            model='RF',
-            **kwargs,
-            ) -> None:
-        
-        self.model
-        self.engine = self.engine_start(model)
-        self.engine(**kwargs)
+    Attributes
+    ----------
+    model : str
+        The type of model to use ('RF', 'MLP', 'KNN', 'LGBM').
+    engine : object
+        The initialized machine learning model.
+
+    Methods
+    -------
+    engine_start(model)
+        Initializes the machine learning model based on the specified type.
+    fit(X, y, **kwargs)
+        Fits the model to the provided data.
+    predict(X)
+        Makes predictions using the fitted model and calculates uncertainty if applicable.
+    """
+    def __init__(self, model='RF', **kwargs) -> None:
+        self.model = model
+        self.engine = self.engine_select(model, **kwargs)
     
-    def engine_start(self, model):
+    def engine_select(self, model, **kwargs):
         engine_funcs = {
             'RF': self._RF,
             'MLP': self._MLP,
@@ -21,8 +33,8 @@ class Engine:
             'LGBM': self._LGBM
         }
         
-        engine = engine_funcs[self.model]
-        return engine
+        engine_func = engine_funcs[model]
+        return engine_func(**kwargs)
 
     def fit(self, X, y, **kwargs):
         if self.model == 'RF':
@@ -39,42 +51,27 @@ class Engine:
         if self.model == 'RF':
             preds = np.zeros((len(X), len(self.engine.estimators_)))
             for j, submodel in enumerate(self.engine.estimators_):
-                preds[:,j] = submodel.predict(X)
-            preds = np.mean(preds, axis=1)
+                preds[:, j] = submodel.predict(X)
+            mean_preds = np.mean(preds, axis=1)
             uncertainty = np.var(preds, axis=1)
 
-        if self.model == 'MLP':
-            preds = self.engine.predict(X)
+        elif self.model == 'MLP':
+            mean_preds = self.engine.predict(X)
             uncertainty = None
 
-        if self.model == 'KNN':
-            preds = self.engine.predict(X)
+        elif self.model == 'KNN':
+            mean_preds = self.engine.predict(X)
             uncertainty = None
 
-        if self.model == 'LGBM':
-            n_trees = self.engine.num_trees()
+        elif self.model == 'LGBM':
+            n_trees = self.engine.booster_.num_trees()
             preds = np.zeros((len(X), n_trees))
             for j in range(n_trees):
-                preds[:, j] = self.engine.predict(X, num_iteration=j+1, pred_leaf=False, raw_score=False)
-            preds = np.mean(preds,axis=1)
+                preds[:, j] = self.engine.predict(X, num_iteration=j+1)
+            mean_preds = np.mean(preds, axis=1)
             uncertainty = np.var(preds, axis=1)
-        return preds, uncertainty
 
-
-def pred_with_uncertainty(X, model, n_trees=None):
-    # If n_trees is not specified, use all trees
-    if n_trees is None:
-        n_trees = model.num_trees()
-
-    # Initialize an array to hold predictions from each tree
-    preds = np.zeros((len(X), n_trees))
-
-    # Get predictions from each tree
-    for j in range(n_trees):
-        preds[:, j] = model.predict(X, num_iteration=j+1, pred_leaf=False, raw_score=False)
-
-    # Calculate the mean and variance across trees
-    return np.mean(preds, axis=1), np.var(preds, axis=1)        
+        return mean_preds, uncertainty
     
     def _RF(self, **kwargs):
         from sklearn.ensemble import RandomForestRegressor
@@ -91,7 +88,3 @@ def pred_with_uncertainty(X, model, n_trees=None):
     def _LGBM(self, **kwargs):
         import lightgbm as lgb
         lgb.LGBMRegressor(**kwargs)
-
-    
-
-model = Engine('RF', n_estimators=100)
