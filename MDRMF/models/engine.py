@@ -8,7 +8,7 @@ class Engine:
     Attributes
     ----------
     model : str
-        The type of model to use ('RF', 'MLP', 'KNN', 'LGBM').
+        The type of model to use ('RF', 'MLP', 'KNN', 'LGBM', 'DT', 'SVR').
     engine : object
         The initialized machine learning model.
 
@@ -30,7 +30,9 @@ class Engine:
             'RF': self._RF,
             'MLP': self._MLP,
             'KNN': self._KNN,
-            'LGBM': self._LGBM
+            'LGBM': self._LGBM,
+            'DT': self._DT,
+            'SVR': self._SVR,
         }
         
         engine_func = engine_funcs[model]
@@ -45,6 +47,11 @@ class Engine:
             self.engine.fit(X, y, **kwargs)
         if self.model == 'LGBM':
             self.engine.fit(X, y, **kwargs)
+        if self.model == 'DT':
+            self.engine.fit(X, y, **kwargs)
+        if self.model == 'SVR':
+            self.engine.fit(X, y, **kwargs)            
+
 
     
     def predict(self, X):
@@ -60,8 +67,10 @@ class Engine:
             uncertainty = None
 
         elif self.model == 'KNN':
-            mean_preds = self.engine.predict(X)
-            uncertainty = None
+            neighbors_preds = self.engine.kneighbors(X, return_distance=False)
+            all_preds = np.array([self.engine._y[neighbors] for neighbors in neighbors_preds])
+            mean_preds = np.mean(all_preds, axis=1)
+            uncertainty = np.var(all_preds, axis=1)
 
         elif self.model == 'LGBM':
             n_trees = self.engine.booster_.num_trees()
@@ -71,8 +80,21 @@ class Engine:
             mean_preds = np.mean(preds, axis=1)
             uncertainty = np.var(preds, axis=1)
 
+        elif self.model == 'DT':
+            mean_preds = self.engine.predict(X)
+            uncertainty = None
+
+        elif self.model == 'SVR':
+            mean_preds = self.engine.predict(X)
+            uncertainty = None
+
         return mean_preds, uncertainty
-    
+
+
+    def access_engine(self):
+        return self.engine
+
+
     def _RF(self, **kwargs):
         from sklearn.ensemble import RandomForestRegressor
         return RandomForestRegressor(**kwargs)
@@ -87,4 +109,12 @@ class Engine:
 
     def _LGBM(self, **kwargs):
         import lightgbm as lgb
-        lgb.LGBMRegressor(**kwargs)
+        return lgb.LGBMRegressor(**kwargs)
+    
+    def _DT(self, **kwargs):
+        from sklearn.tree import DecisionTreeRegressor
+        return DecisionTreeRegressor(**kwargs)
+    
+    def _SVR(self, **kwargs):
+        from sklearn.svm import SVR
+        return SVR(**kwargs)

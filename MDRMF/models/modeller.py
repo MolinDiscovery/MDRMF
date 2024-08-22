@@ -349,7 +349,7 @@ class Modeller:
 
     def predict(self, dataset: Dataset, dataset_train: Dataset = None, return_uncertainty = False):
 
-        if isinstance(dataset, Dataset) is False or isinstance(dataset_train, Dataset) is False:
+        if isinstance(dataset, Dataset) is False:
             logging.error("Wrong object type. Must be of type `Dataset`")
             sys.exit()
 
@@ -381,7 +381,7 @@ class Modeller:
         n2 = train_dataset.X.shape[0]
 
         X1X2 = self.PADRE_features(predict_dataset.X, train_dataset.X)
-        y1_minus_y2_hat = engine.predict(X1X2)
+        y1_minus_y2_hat = engine.predict(X1X2)[0]
         y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
         mu = y1_hat_distribution.mean(axis=1)
         std = y1_hat_distribution.std(axis=1)
@@ -391,13 +391,18 @@ class Modeller:
     def optimize_for_feature_importance(self, opt_parameters: Dict):
 
         print('Computing feature importance...')
+        if self.engine_name != 'RF':
+            print('Feature optimization tests has only been implemented for random forest (RF)')
+            print('Terminating program...')
+            sys.exit()
 
         iterations = opt_parameters['iterations']
         features_limit = opt_parameters['features_limit']
     
-        model = self.fit(iterations_in=iterations)
+        self.fit(iterations_in=iterations)
+        engine = self.engine.access_engine()
 
-        feature_importances = model.feature_importances_
+        feature_importances = engine.feature_importances_
         feature_importances_sorted = np.argsort(feature_importances)[:-1]
         important_features = feature_importances_sorted[-features_limit:]
 
@@ -569,7 +574,3 @@ class Modeller:
         mu = y1_hat_distribution.mean(axis=1)
         std = y1_hat_distribution.std(axis=1)
         return mu, std
-    
-dataset = Dataset.load('/Users/jacobmolinnielsen/dev/MDRMF-project/datasets/dataset_mqn_shuffled.pkl')
-modeller = Modeller(dataset, engine='MLP', acquisition_method='greedy')
-modeller.fit()

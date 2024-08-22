@@ -1,9 +1,7 @@
-from enum import unique
 import numpy as np
 import yaml
 import os
 import pandas as pd
-import inspect
 import time
 import shutil
 import datetime
@@ -13,7 +11,7 @@ import atexit
 import matplotlib.pyplot as plt
 from typing import List
 from MDRMF.evaluator import Evaluator
-import MDRMF.models as mfm
+from MDRMF.models import Modeller
 from MDRMF import Dataset, MoleculeLoader, Featurizer, Model, ConfigValidator
 
 class Experimenter:
@@ -46,7 +44,8 @@ class Experimenter:
         self.create_meta_data()
 
         # If 'save_nothing' is True and the program crashes or is interrupted we delete the root folder.
-        atexit.register(self.cleanup)
+        if self.save_nothing is True:
+            atexit.register(self.cleanup)
 
 
     def get_protocol_name(self) -> str:
@@ -374,7 +373,8 @@ class Experimenter:
         elapsed_time = end_time - start_time
 
         if hasattr(self, "save_nothing") and self.save_nothing is True:
-            self.cleanup()
+            # self.cleanup()
+            pass
         else:
             print("Lab time over. All experiments conducted. Look for the results folder.")
 
@@ -387,10 +387,6 @@ class Experimenter:
 
         if not dataset_model:
             raise Exception("Unable to create or load a dataset model.")
-        
-        # Extract unique indices from the unique_ids
-        # ['CCO', 'CCC', 'COOC']
-
 
         # --- Directory setup --- #
         experiment_directory = os.path.join(self.root_dir, exp_config['name'])
@@ -411,16 +407,6 @@ class Experimenter:
         model_name = model_config['name']
         model_params = model_config.copy()
         del model_params['name']
-
-        # Check if model class exists
-        model_class = None
-        for name, obj in inspect.getmembers(mfm):
-            if inspect.isclass(obj) and name == model_name:
-                model_class = obj
-                break
-
-        if model_class is None:
-            raise ValueError(f"Model {model_name} not found in MDRMF.models")
 
         # Setup evaluator
         model_metrics = exp_config['metrics']
@@ -447,14 +433,14 @@ class Experimenter:
 
             # Setup model
             if uniform_indices is not None:
-                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=uniform_indices, model_graphs=self.save_graphs, **model_params)
+                model_input = Modeller(dataset_model_replicate, engine=model_name, evaluator=evaluator, seeds=uniform_indices, model_graphs=self.save_graphs, **model_params)
             elif unique_ids is not None:
                 unique_seeds = dataset_model.get_indices_from_ids(unique_ids[i]) # Get indices from unique_ids list for each replicate.
                 print('Seeds: ', unique_ids[i])
                 print('Indices: ', unique_seeds)
-                model_input = model_class(dataset_model_replicate, evaluator=evaluator, seeds=unique_seeds, model_graphs=self.save_graphs, **model_params)
+                model_input = Modeller(dataset_model_replicate, engine=model_name, evaluator=evaluator, seeds=unique_seeds, model_graphs=self.save_graphs, **model_params)
             else:
-                model_input = model_class(dataset_model_replicate, evaluator=evaluator, model_graphs=self.save_graphs, **model_params)
+                model_input = Modeller(dataset_model_replicate, evaluator=evaluator, model_graphs=self.save_graphs, **model_params)
             model = Model(model=model_input)
             model.train()
 
@@ -497,20 +483,12 @@ class Experimenter:
         model_name = model_config['name']
         model_params = model_config.copy()
         del model_params['name']
-
-        model_class = None
-        for name, obj in inspect.getmembers(mfm):
-            if inspect.isclass(obj) and name == model_name:
-                model_class = obj
-                break
-
-        if model_class is None:
-            raise ValueError(f'Model {model_name} not found in MDRMF.models')
         
         length_labeled_data = dataset_labeled.y.shape[0]
 
-        model_input = model_class(
+        model_input = Modeller(
             dataset_labeled,
+            engine=model_name,
             iterations=0,
             initial_sample_size=length_labeled_data,
             **model_params
