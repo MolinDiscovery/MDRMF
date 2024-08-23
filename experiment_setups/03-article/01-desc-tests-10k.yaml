@@ -381,7 +381,6 @@
         iterations: 5
         acquisition_size: 20
         acquisition_method: greedy
-        random_state: 42
 
     metrics: 
         names: [top-k, top-k-acquired]

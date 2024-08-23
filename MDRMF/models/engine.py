@@ -52,7 +52,6 @@ class Engine:
         if self.model == 'SVR':
             self.engine.fit(X, y, **kwargs)            
 
-
     
     def predict(self, X):
         if self.model == 'RF':
@@ -94,14 +93,13 @@ class Engine:
     def access_engine(self):
         return self.engine
 
-
     def _RF(self, **kwargs):
         from sklearn.ensemble import RandomForestRegressor
-        return RandomForestRegressor(**kwargs)
+        return RandomForestRegressor(random_state=42, **kwargs)
     
     def _MLP(self, **kwargs):
         from sklearn.neural_network import MLPRegressor
-        return MLPRegressor(**kwargs)
+        return MLPRegressor(random_state=42, **kwargs)
     
     def _KNN(self, **kwargs):
         from sklearn.neighbors import KNeighborsRegressor
@@ -109,11 +107,11 @@ class Engine:
 
     def _LGBM(self, **kwargs):
         import lightgbm as lgb
-        return lgb.LGBMRegressor(**kwargs)
+        return lgb.LGBMRegressor(random_state=42, **kwargs)
     
     def _DT(self, **kwargs):
         from sklearn.tree import DecisionTreeRegressor
-        return DecisionTreeRegressor(**kwargs)
+        return DecisionTreeRegressor(random_state=42, **kwargs)
     
     def _SVR(self, **kwargs):
         from sklearn.svm import SVR
