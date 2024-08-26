@@ -107,7 +107,7 @@ class Engine:
 
     def _LGBM(self, **kwargs):
         import lightgbm as lgb
-        return lgb.LGBMRegressor(random_state=42, **kwargs)
+        return lgb.LGBMRegressor(verbose=-1, random_state=42, **kwargs)
     
     def _DT(self, **kwargs):
         from sklearn.tree import DecisionTreeRegressor

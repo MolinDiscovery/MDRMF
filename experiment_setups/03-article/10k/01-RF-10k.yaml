@@ -1,10 +1,4 @@
-- Protocol_name: 01-descriptor-tests-(10k)
-
-- save_models: False
-- save_datasets: False
-- save_graphs: False
-- save_nothing: True
-- results_path: /Users/jacobmolinnielsen/dev/MDRMF-project/results/03-article-results
+- results_path: /Users/jacobmolinnielsen/dev/MDRMF-project/results/03-article-results/tests/
 
 - unique_initial_sample:
     seeds: [
@@ -372,7 +366,6 @@
 
 - Experiment:
     name: morgan
-    replicate: 30
 
     dataset: datasets/dataset_morgan_shuffled.pkl
 

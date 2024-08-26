@@ -1,5 +1,3 @@
-- Protocol_name: tests
-
 - save_models: False
 - save_datasets: False
 - save_graphs: False
@@ -373,7 +371,6 @@
 
 - Experiment:
     name: rdkit2D pairwise
-    replicate: 3
 
     dataset: datasets/dataset_mqn_shuffled.pkl
 
@@ -381,8 +378,7 @@
         name: RF
         iterations: 5
         acquisition_size: 20
-        acquisition_method: EI
-        use_pairwise: True
+        acquisition_method: greedy
 
 
     metrics: 

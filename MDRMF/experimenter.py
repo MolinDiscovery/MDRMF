@@ -34,7 +34,7 @@ class Experimenter:
         validator.data_validation(self.config_file)
 
         # Generate ids
-        self.protocol_name = self.get_protocol_name()
+        self.protocol_name = os.path.splitext(os.path.basename(self.config_file))[0]
         id = self.generate_id(self.protocol_name)
 
         # Setting up root directory
@@ -48,18 +48,11 @@ class Experimenter:
             atexit.register(self.cleanup)
 
 
-    def get_protocol_name(self) -> str:
-        try:
-            return self.experiments[0][0]['Protocol_name']
-        except KeyError as exc:
-            return "protocol"
-
-
     def generate_id(self, protocol_name: str) -> str:
         current_time = datetime.datetime.now()
         formatted_time = current_time.strftime('%y%m%d-%H%M%S')  # YYMMDD-HHMMSS
         # Create a UUID and take the first 8 characters for a shorter hash
-        uuid_hash = str(uuid.uuid4())[:8]
+        uuid_hash = str(uuid.uuid4())[:2]
         id = f"{protocol_name}-{formatted_time}-{uuid_hash}"
         return id
 
