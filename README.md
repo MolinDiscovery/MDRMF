@@ -17,3 +17,4 @@ MDRMF is a platform that can help find candidate drugs for a particular disease 
 **Retrospective part:** This is for testing and optimization purposes. You have dataset with SMILESs that is fully labelled with some score (e.g. docking). The software can evaluate how many hits its able to obtain with the specified settings.
 
 **Prospective idea:** The software was designed to be used on experimental data. That is, you have a list of SMILESs from the dataset you're investigating. You select X number of molecules from the dataset and test them to obtain labels. These labels are assigned to the corresponding molecules and in given to the software for training. The software will then return X number of molecules that it wants you to test next.
+
