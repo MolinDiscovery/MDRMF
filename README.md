@@ -297,7 +297,7 @@ You can declare a feature importance optimization where upon you can declare num
     name: RF rdkit2D feature importance 20
     replicate: 30
 
-    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+    dataset: datasets/datasets.pkl
 
     model:
         name: RF
