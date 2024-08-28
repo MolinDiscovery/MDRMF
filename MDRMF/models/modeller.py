@@ -9,6 +9,9 @@ from scipy.stats import norm
 from typing import Dict
 from MDRMF.dataset import Dataset
 from MDRMF.models.engine import Engine
+from joblib import Parallel, delayed
+
+num_cores = os.cpu_count()
 
 class Modeller:
 
@@ -368,7 +371,7 @@ class Modeller:
             if self.use_pairwise:
                 preds, _ = self._pairwise_predict(dataset_train, dataset, self.engine)
             else:
-                preds, _ = self.engine.predict(dataset.X)
+                preds, _ = self.engine.predict(dataset.X, no_uncertainty=True)
         
         if return_uncertainty:
             return preds, uncertainty
@@ -376,17 +379,89 @@ class Modeller:
             return preds
 
 
-    def _pairwise_predict(self, train_dataset: Dataset, predict_dataset: Dataset, engine: Engine):
-        n1 = predict_dataset.X.shape[0]
+    # def _pairwise_predict(self, train_dataset: Dataset, predict_dataset: Dataset, engine: Engine):
+
+    #     # Split up prediction if dataset size is greater than 10k.
+    #     dataset_size = predict_dataset.y.shape[0]
+    #     batch_size = 10000
+
+    #     if dataset_size > batch_size:
+
+    #         # Split prediction dataset into batches of 10k and less for the last one.
+    #         split_datasets = []
+    #         for i in range(0, dataset_size, batch_size):
+    #             end_index = min(i + batch_size, dataset_size)
+    #             indices = list(range(i, end_index))
+    #             batch_dataset = predict_dataset.get_points(indices)
+    #             split_datasets.append(batch_dataset)
+
+    #         # Predict on each of the prediction datasets
+    #         n2 = train_dataset.X.shape[0]
+
+    #         mu_list = []
+    #         std_list = []
+    #         for split_set in split_datasets:
+    #             n1 = split_set.X.shape[0]
+    #             X1X2 = self.PADRE_features(split_set.X, train_dataset.X)
+    #             y1_minus_y2_hat = engine.predict(X1X2)[0]
+    #             y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
+    #             mu = y1_hat_distribution.mean(axis=1)
+    #             std = y1_hat_distribution.std(axis=1)
+    #             mu_list.append(mu)
+    #             std_list.append(std)
+
+    #         mu = np.concatenate(mu_list)
+    #         std = np.concatenate(std)
+
+    #     else:
+    #         n1 = predict_dataset.X.shape[0]
+    #         n2 = train_dataset.X.shape[0]
+
+    #         X1X2 = self.PADRE_features(predict_dataset.X, train_dataset.X)
+    #         y1_minus_y2_hat = engine.predict(X1X2)[0]
+    #         y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
+    #         mu = y1_hat_distribution.mean(axis=1)
+    #         std = y1_hat_distribution.std(axis=1)
+
+    #     return mu, std
+    
+# --------------------------------
+    def parallel_predict_chunk(self, start_idx, end_idx, engine, train_dataset, predict_dataset):
+        X_chunk = predict_dataset.X[start_idx:end_idx]
+        return self._pairwise_predict_chunk(engine, train_dataset, X_chunk)
+
+    def _pairwise_predict_chunk(self, engine, train_dataset, X_chunk):
+        n1 = X_chunk.shape[0]
         n2 = train_dataset.X.shape[0]
 
-        X1X2 = self.PADRE_features(predict_dataset.X, train_dataset.X)
-        y1_minus_y2_hat = engine.predict(X1X2)[0]
+        X1X2 = self.PADRE_features(X_chunk, train_dataset.X)
+        y1_minus_y2_hat = engine.predict(X1X2, no_uncertainty=True)[0]
         y1_hat_distribution = y1_minus_y2_hat.reshape(n1, n2) + train_dataset.y[np.newaxis, :]
         mu = y1_hat_distribution.mean(axis=1)
         std = y1_hat_distribution.std(axis=1)
         return mu, std
 
+    def _pairwise_predict(self, train_dataset, predict_dataset, engine):
+        dataset_size = predict_dataset.X.shape[0]
+        chunk_size = 1000  # Maximum chunk size to avoid memory issues
+
+        n_chunks = max(1, (dataset_size + chunk_size - 1) // chunk_size)
+
+        if n_chunks < num_cores:
+            chunk_size = dataset_size // num_cores
+            n_chunks = num_cores
+
+        results = Parallel(n_jobs=num_cores)(
+            delayed(self.parallel_predict_chunk)(i, min(i + chunk_size, dataset_size), engine, train_dataset, predict_dataset)
+            for i in range(0, dataset_size, chunk_size)
+        )
+
+        mu_list, std_list = zip(*results)
+        mu = np.concatenate(mu_list)
+        std = np.concatenate(std_list)
+
+        return mu, std
+# --------------------------------
 
     def optimize_for_feature_importance(self, opt_parameters: Dict):
 

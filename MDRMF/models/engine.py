@@ -1,5 +1,8 @@
 # engine.py
 import numpy as np
+import os
+from joblib import Parallel, delayed
+num_cores = os.cpu_count()
 
 class Engine:
     """
@@ -53,31 +56,43 @@ class Engine:
             self.engine.fit(X, y, **kwargs)            
 
     
-    def predict(self, X):
+    def predict(self, X, no_uncertainty=False):
         if self.model == 'RF':
-            preds = np.zeros((len(X), len(self.engine.estimators_)))
-            for j, submodel in enumerate(self.engine.estimators_):
-                preds[:, j] = submodel.predict(X)
-            mean_preds = np.mean(preds, axis=1)
-            uncertainty = np.var(preds, axis=1)
+            if no_uncertainty == False:
+                preds = np.zeros((len(X), len(self.engine.estimators_)))
+                for j, submodel in enumerate(self.engine.estimators_):
+                    preds[:, j] = submodel.predict(X)
+                mean_preds = np.mean(preds, axis=1)
+                uncertainty = np.var(preds, axis=1)
+            else:
+                mean_preds = self.engine.predict(X)
+                uncertainty = None
 
         elif self.model == 'MLP':
             mean_preds = self.engine.predict(X)
             uncertainty = None
 
         elif self.model == 'KNN':
-            neighbors_preds = self.engine.kneighbors(X, return_distance=False)
-            all_preds = np.array([self.engine._y[neighbors] for neighbors in neighbors_preds])
-            mean_preds = np.mean(all_preds, axis=1)
-            uncertainty = np.var(all_preds, axis=1)
+            if no_uncertainty == False:
+                neighbors_preds = self.engine.kneighbors(X, return_distance=False)
+                all_preds = np.array([self.engine._y[neighbors] for neighbors in neighbors_preds])
+                mean_preds = np.mean(all_preds, axis=1)
+                uncertainty = np.var(all_preds, axis=1)
+            else:
+                mean_preds = self.engine.predict(X)
+                uncertainty = None                
 
         elif self.model == 'LGBM':
-            n_trees = self.engine.booster_.num_trees()
-            preds = np.zeros((len(X), n_trees))
-            for j in range(n_trees):
-                preds[:, j] = self.engine.predict(X, num_iteration=j+1)
-            mean_preds = np.mean(preds, axis=1)
-            uncertainty = np.var(preds, axis=1)
+            if no_uncertainty == False:
+                n_trees = self.engine.booster_.num_trees()
+                preds = np.zeros((len(X), n_trees))
+                for j in range(n_trees):
+                    preds[:, j] = self.engine.predict(X, num_iteration=j+1)
+                mean_preds = np.mean(preds, axis=1)
+                uncertainty = np.var(preds, axis=1)
+            else:
+                mean_preds = self.engine.predict(X)
+                uncertainty = None                
 
         elif self.model == 'DT':
             mean_preds = self.engine.predict(X)
@@ -95,7 +110,7 @@ class Engine:
 
     def _RF(self, **kwargs):
         from sklearn.ensemble import RandomForestRegressor
-        return RandomForestRegressor(random_state=42, **kwargs)
+        return RandomForestRegressor(n_jobs=num_cores, random_state=42, **kwargs)
     
     def _MLP(self, **kwargs):
         from sklearn.neural_network import MLPRegressor
