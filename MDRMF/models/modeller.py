@@ -9,7 +9,7 @@ from scipy.stats import norm
 from typing import Dict
 from MDRMF.dataset import Dataset
 from MDRMF.models.engine import Engine
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, parallel_config
 
 num_cores = os.cpu_count()
 
@@ -378,7 +378,7 @@ class Modeller:
         else:
             return preds
 
-
+    # Old PADRE implementation
     # def _pairwise_predict(self, train_dataset: Dataset, predict_dataset: Dataset, engine: Engine):
 
     #     # Split up prediction if dataset size is greater than 10k.
@@ -424,7 +424,8 @@ class Modeller:
     #         std = y1_hat_distribution.std(axis=1)
 
     #     return mu, std
-    
+
+# New PADRE implementation
 # --------------------------------
     def parallel_predict_chunk(self, start_idx, end_idx, engine, train_dataset, predict_dataset):
         X_chunk = predict_dataset.X[start_idx:end_idx]
@@ -440,7 +441,7 @@ class Modeller:
         mu = y1_hat_distribution.mean(axis=1)
         std = y1_hat_distribution.std(axis=1)
         return mu, std
-
+    
     def _pairwise_predict(self, train_dataset, predict_dataset, engine):
         dataset_size = predict_dataset.X.shape[0]
         chunk_size = 1000  # Maximum chunk size to avoid memory issues
@@ -451,10 +452,11 @@ class Modeller:
             chunk_size = dataset_size // num_cores
             n_chunks = num_cores
 
-        results = Parallel(n_jobs=num_cores)(
-            delayed(self.parallel_predict_chunk)(i, min(i + chunk_size, dataset_size), engine, train_dataset, predict_dataset)
-            for i in range(0, dataset_size, chunk_size)
-        )
+        with parallel_config('threading'):
+            results = Parallel(n_jobs=num_cores)(
+                delayed(self.parallel_predict_chunk)(i, min(i + chunk_size, dataset_size), engine, train_dataset, predict_dataset)
+                for i in range(0, dataset_size, chunk_size)
+            )
 
         mu_list, std_list = zip(*results)
         mu = np.concatenate(mu_list)

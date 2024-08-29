@@ -2,6 +2,7 @@
 - save_datasets: False
 - save_graphs: False
 - save_nothing: True
+- results_path: /Users/jacobmolinnielsen/dev/MDRMF-project/results
 
 #DDS
 # - unique_initial_sample:
@@ -397,102 +398,102 @@
         "C/C=C/[C@H](C(=O)NC(N)=O)C(C)C",
         "C=CCNC(=S)NCc1cccc2ccccc12",
     ],    
-    # [
-    #     "CCN(CC)/[NH+]=C/C[C@H](C)Nc1ccnc2cc(Cl)ccc12",
-    #     "COc1ccc2nc(C)c(COC(C)=O)cc2c1",
-    #     "C[NH+]1C=c2c3c(ccc2=C2C=C[C@H]4C=C5OCOC5=CC4=C21)OCO3",
-    #     "O=C([O-])c1cccc(O)c1O",
-    #     "O=CNc1cc(Br)cc2c1[nH]c(=O)c1ccccc12",
-    #     "CCO/C=C1\\SC(=S)N(c2ccc(C(=O)[O-])cc2)C1=O",
-    #     "CC(C)(C)C[NH+]1CCCN(c2ccc(Cl)cc2)C1",
-    #     "O=C1c2ccccc2C(=O)N1Cc1cc([N+](=O)[O-])ccc1Cl",
-    #     "COc1cccc(P(c2cccc(OC)c2)c2cccc(OC)c2)c1",
-    #     "Cc1cccn2ncnc12",
-    # ],
-    # [
-    #     "CC(=O)NC1=C([NH3+])C(=O)c2ccccc2C1=O",
-    #     "O=C1C=C(c2ccccc2)O[C@H]1[C@@H]1Sc2ccccc2NC1=O",
-    #     "O=C([O-])[C@H](c1ccccc1)c1cccc([C@@H](C(=O)[O-])c2ccccc2)n1",
-    #     "COc1ccc(CC2=[N+](C)CCc3cc(OC)c(OC)cc32)cc1OC",
-    #     "OCCCCC[NH2+]C1CCCCC1",
-    #     "C1=Nc2c(ncnc2SCc2ccccc2)NN1",
-    #     "CC1(C)O[C@@H]1C(=O)[O-]",
-    #     "OC[C@H]1COc2cc(Cl)c(Cl)cc2O1",
-    #     "c1nc2c3c4c(sc3ncn2n1)CCCC4",
-    #     "COc1ccc(CCc2nccn2C)cc1OC",
-    # ],
-    # [
-    #     "COc1ccc(Cl)c(S(N)(=O)=O)c1",
-    #     "Cc1cc(SCc2ccc([N+](=O)[O-])cc2)nc(N)n1",
-    #     "CCOC(=O)/C=C/c1ccc(N)cc1",
-    #     "O=c1[nH]nc2c3cccc4cccc(c5ccc([O-])c1c52)c43",
-    #     "CN(C=O)c1cc([N+](=O)[O-])ccc1OCc1ccccc1",
-    #     "O=C(N/[NH+]=C\\C(F)(F)F)c1ccncc1",
-    #     "CC(C)(CO)CNc1nc(N)nc(Cl)c1N",
-    #     "CCOC(=O)N[C@H]1[C@@H]2OC(C)(C)O[C@@H]2O[C@H]1CC(=O)OC",
-    #     "CCOC(=O)[C@H]1Cc2c(cc3c4c(cccc24)N(C(C)=O)C3)N(C)C1",
-    #     "O=C(Nc1ccccc1CO)c1ccccc1",
-    # ],
-    # [
-    #     "CS(=O)(=O)Oc1ccc([N+](=O)[O-])cc1",
-    #     "CCCC1(C)[C@@H](C#N)C(=O)NC(=O)[C@@H]1C#N",
-    #     "O=[N+]([O-])c1cccc([C@@H]2CC(c3ccccc3)=[NH+]N2c2ccccc2)c1",
-    #     "O=S(=O)([O-])CC[C@@H](O)S(=O)(=O)[O-]",
-    #     "Cc1c([N+](=O)[O-])ccc2cccnc12",
-    #     "CCn1c(=O)c2c(ncn2CC)n(CC)c1=O",
-    #     "CCn1c(Cl)c(/C=[NH+]\\Nc2ccc([N+](=O)[O-])cc2)c2ccccc21",
-    #     "N#CS/C=C\\C(N)=O",
-    #     "O=c1oc2ccccc2cc1-n1nnc2cc([N+](=O)[O-])ccc21",
-    #     "CCOc1ccc(/N=C/c2cccc([N+](=O)[O-])c2)c(O)c1",
-    # ],
-    # [
-    #     "CCn1c(=O)c(C#N)c2n(CC)c3cc(C)c(C)cc3n2c1=O",
-    #     "O=C1c2ccccc2C(=O)c2c(OC[C@H]3CO3)ccc(OC[C@@H]3CO3)c21",
-    #     "NC(=O)c1cccc(NC=O)c1",
-    #     "CC(=O)c1ccccc1Br",
-    #     "CC(=O)Nc1nnc(SC[NH+](C)C)s1",
-    #     "C=C(Br)C[NH2+]CCCCCC",
-    #     "CCOC(=O)c1[nH]c(CO)c(C(=O)OCC)c1C",
-    #     "C[C@H]1CN(c2ccncc2[N+](=O)[O-])CCN1c1ccc(Cl)cc1",
-    #     "CCC[C@H]1OCCN1CC",
-    #     "CC1([N+](=O)[O-])COP(=O)(NCc2cccnc2)OC1",
-    # ],
-    # [
-    #     "CCC(=O)Oc1cccc(OC(=O)CC)c1",
-    #     "COc1cc(NC/C(C)=[NH+]/NC(N)=O)c2ncccc2c1",
-    #     "Nc1nc(Cl)c2c(n1)CCC2",
-    #     "Nc1ncnc2c1ncn2-c1ccccc1Cl",
-    #     "COc1ccc(-c2nnc(-c3c(C)n(C)n(-c4ccccc4)c3=O)o2)cc1",
-    #     "COc1cc2cccc(O)c2cc1OC",
-    #     "O=C(NNC(=O)c1cccc2ccccc12)c1ccc(F)cc1",
-    #     "CCOC(=O)[C@@H](C/[N+]([O-])=C/c1ccccc1)NC(C)=O",
-    #     "COc1cc2c3c(c4cc(OC)c(OC)cc4c2cc1OC)C[NH+]1CCC[C@H]1C3",
-    #     "CCN(CC)C(=O)Nc1cccc(O)c1",
-    # ],
-    # [
-    #     "CNC(=O)NN",
-    #     "C=C(C)[C@@H]1C[C@H](O)Cc2cc(F)ccc2N1",
-    #     "C[NH+]1C(C)(C)CC(O)(C(=O)[O-])CC1(C)C",
-    #     "Nc1ncc2[nH]c(=O)[nH]c2n1",
-    #     "Cn1cc(C(=O)c2ccccc2)cc(C(=O)c2ccccc2)c1=O",
-    #     "CCCCCCC[C@@H]1OCC[C@H](C)O1",
-    #     "CCC(=[NH+]\\NC(=S)NC)/C(C)=[NH+]\\NC(=S)NC",
-    #     "Nc1ccc(CCOc2ccc(N)cc2)cc1",
-    #     "CCOc1ccc(N)c(SCC(=O)[O-])c1",
-    #     "S=C1Nc2ccccc2CS1",
-    # ],
-    # [
-    #     "CCOc1nc(C)cc(C(=O)[O-])c1C#N",
-    #     "COc1ccccc1/C=C(/C)C(C)=O",
-    #     "COC(=O)N1[C@@H](N2CCCC2=O)C(C)(C)S1(=O)=O",
-    #     "CCOC(=O)CCN1C(=O)CC[C@H]1C(=O)OCC",
-    #     "NC(=O)N/[NH+]=C\\c1ccc(O)cn1",
-    #     "C1CSC(N2CCOCC2)=N1",
-    #     "CCO[N+]([O-])=C1C=C(C(C)(C)C)C(=O)C(C(C)(C)C)=C1",
-    #     "COc1cccc([C@@H]2CCCC[C@@H]2O)c1",
-    #     "CCCn1c(N)c(Cl)c(=O)n(CC)c1=O",
-    #     "COC(=O)/C=C/CC(=O)NS(C)(=O)=O",
-    # ],
+    [
+        "CCN(CC)/[NH+]=C/C[C@H](C)Nc1ccnc2cc(Cl)ccc12",
+        "COc1ccc2nc(C)c(COC(C)=O)cc2c1",
+        "C[NH+]1C=c2c3c(ccc2=C2C=C[C@H]4C=C5OCOC5=CC4=C21)OCO3",
+        "O=C([O-])c1cccc(O)c1O",
+        "O=CNc1cc(Br)cc2c1[nH]c(=O)c1ccccc12",
+        "CCO/C=C1\\SC(=S)N(c2ccc(C(=O)[O-])cc2)C1=O",
+        "CC(C)(C)C[NH+]1CCCN(c2ccc(Cl)cc2)C1",
+        "O=C1c2ccccc2C(=O)N1Cc1cc([N+](=O)[O-])ccc1Cl",
+        "COc1cccc(P(c2cccc(OC)c2)c2cccc(OC)c2)c1",
+        "Cc1cccn2ncnc12",
+    ],
+    [
+        "CC(=O)NC1=C([NH3+])C(=O)c2ccccc2C1=O",
+        "O=C1C=C(c2ccccc2)O[C@H]1[C@@H]1Sc2ccccc2NC1=O",
+        "O=C([O-])[C@H](c1ccccc1)c1cccc([C@@H](C(=O)[O-])c2ccccc2)n1",
+        "COc1ccc(CC2=[N+](C)CCc3cc(OC)c(OC)cc32)cc1OC",
+        "OCCCCC[NH2+]C1CCCCC1",
+        "C1=Nc2c(ncnc2SCc2ccccc2)NN1",
+        "CC1(C)O[C@@H]1C(=O)[O-]",
+        "OC[C@H]1COc2cc(Cl)c(Cl)cc2O1",
+        "c1nc2c3c4c(sc3ncn2n1)CCCC4",
+        "COc1ccc(CCc2nccn2C)cc1OC",
+    ],
+    [
+        "COc1ccc(Cl)c(S(N)(=O)=O)c1",
+        "Cc1cc(SCc2ccc([N+](=O)[O-])cc2)nc(N)n1",
+        "CCOC(=O)/C=C/c1ccc(N)cc1",
+        "O=c1[nH]nc2c3cccc4cccc(c5ccc([O-])c1c52)c43",
+        "CN(C=O)c1cc([N+](=O)[O-])ccc1OCc1ccccc1",
+        "O=C(N/[NH+]=C\\C(F)(F)F)c1ccncc1",
+        "CC(C)(CO)CNc1nc(N)nc(Cl)c1N",
+        "CCOC(=O)N[C@H]1[C@@H]2OC(C)(C)O[C@@H]2O[C@H]1CC(=O)OC",
+        "CCOC(=O)[C@H]1Cc2c(cc3c4c(cccc24)N(C(C)=O)C3)N(C)C1",
+        "O=C(Nc1ccccc1CO)c1ccccc1",
+    ],
+    [
+        "CS(=O)(=O)Oc1ccc([N+](=O)[O-])cc1",
+        "CCCC1(C)[C@@H](C#N)C(=O)NC(=O)[C@@H]1C#N",
+        "O=[N+]([O-])c1cccc([C@@H]2CC(c3ccccc3)=[NH+]N2c2ccccc2)c1",
+        "O=S(=O)([O-])CC[C@@H](O)S(=O)(=O)[O-]",
+        "Cc1c([N+](=O)[O-])ccc2cccnc12",
+        "CCn1c(=O)c2c(ncn2CC)n(CC)c1=O",
+        "CCn1c(Cl)c(/C=[NH+]\\Nc2ccc([N+](=O)[O-])cc2)c2ccccc21",
+        "N#CS/C=C\\C(N)=O",
+        "O=c1oc2ccccc2cc1-n1nnc2cc([N+](=O)[O-])ccc21",
+        "CCOc1ccc(/N=C/c2cccc([N+](=O)[O-])c2)c(O)c1",
+    ],
+    [
+        "CCn1c(=O)c(C#N)c2n(CC)c3cc(C)c(C)cc3n2c1=O",
+        "O=C1c2ccccc2C(=O)c2c(OC[C@H]3CO3)ccc(OC[C@@H]3CO3)c21",
+        "NC(=O)c1cccc(NC=O)c1",
+        "CC(=O)c1ccccc1Br",
+        "CC(=O)Nc1nnc(SC[NH+](C)C)s1",
+        "C=C(Br)C[NH2+]CCCCCC",
+        "CCOC(=O)c1[nH]c(CO)c(C(=O)OCC)c1C",
+        "C[C@H]1CN(c2ccncc2[N+](=O)[O-])CCN1c1ccc(Cl)cc1",
+        "CCC[C@H]1OCCN1CC",
+        "CC1([N+](=O)[O-])COP(=O)(NCc2cccnc2)OC1",
+    ],
+    [
+        "CCC(=O)Oc1cccc(OC(=O)CC)c1",
+        "COc1cc(NC/C(C)=[NH+]/NC(N)=O)c2ncccc2c1",
+        "Nc1nc(Cl)c2c(n1)CCC2",
+        "Nc1ncnc2c1ncn2-c1ccccc1Cl",
+        "COc1ccc(-c2nnc(-c3c(C)n(C)n(-c4ccccc4)c3=O)o2)cc1",
+        "COc1cc2cccc(O)c2cc1OC",
+        "O=C(NNC(=O)c1cccc2ccccc12)c1ccc(F)cc1",
+        "CCOC(=O)[C@@H](C/[N+]([O-])=C/c1ccccc1)NC(C)=O",
+        "COc1cc2c3c(c4cc(OC)c(OC)cc4c2cc1OC)C[NH+]1CCC[C@H]1C3",
+        "CCN(CC)C(=O)Nc1cccc(O)c1",
+    ],
+    [
+        "CNC(=O)NN",
+        "C=C(C)[C@@H]1C[C@H](O)Cc2cc(F)ccc2N1",
+        "C[NH+]1C(C)(C)CC(O)(C(=O)[O-])CC1(C)C",
+        "Nc1ncc2[nH]c(=O)[nH]c2n1",
+        "Cn1cc(C(=O)c2ccccc2)cc(C(=O)c2ccccc2)c1=O",
+        "CCCCCCC[C@@H]1OCC[C@H](C)O1",
+        "CCC(=[NH+]\\NC(=S)NC)/C(C)=[NH+]\\NC(=S)NC",
+        "Nc1ccc(CCOc2ccc(N)cc2)cc1",
+        "CCOc1ccc(N)c(SCC(=O)[O-])c1",
+        "S=C1Nc2ccccc2CS1",
+    ],
+    [
+        "CCOc1nc(C)cc(C(=O)[O-])c1C#N",
+        "COc1ccccc1/C=C(/C)C(C)=O",
+        "COC(=O)N1[C@@H](N2CCCC2=O)C(C)(C)S1(=O)=O",
+        "CCOC(=O)CCN1C(=O)CC[C@H]1C(=O)OCC",
+        "NC(=O)N/[NH+]=C\\c1ccc(O)cn1",
+        "C1CSC(N2CCOCC2)=N1",
+        "CCO[N+]([O-])=C1C=C(C(C)(C)C)C(=O)C(C(C)(C)C)=C1",
+        "COc1cccc([C@@H]2CCCC[C@@H]2O)c1",
+        "CCCn1c(N)c(Cl)c(=O)n(CC)c1=O",
+        "COC(=O)/C=C/CC(=O)NS(C)(=O)=O",
+    ],
     # [
     #     "C[C@H](CC(=O)c1ccc(F)cc1)[NH+]1CCCCC1",
     #     "CSCC[C@H]([NH3+])[P@](C)(=O)[O-]",
@@ -737,16 +738,15 @@
 
 - Experiment:
     name: rdkit2D pairwise
-    replicate: 30
 
     dataset: datasets/DTP_rdkit2D_shuffled.pkl
 
     model:
         name: RF
-        iterations: 5
-        acquisition_size: 20
+        iterations: 2
+        acquisition_size: 30000
         acquisition_method: greedy
-        use_pairwise: True
+        #use_pairwise: True
 
 
     metrics: 

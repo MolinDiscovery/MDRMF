@@ -124,9 +124,11 @@ Metrics define how to evaluate the active learning experiment. In this demo setu
 ```yaml
 [top-k-acquired, R2_model, R2_k, top-k]
 ```
+You can do multiple evaluations at each run by supplying a longer list `[100, 1000]`.
+
 Notes: `top-k` returns how many of the top-k molecules the trained model predicts to be actual top k molecules. For instance, if you have a dataset of _mol1_ .. _mol100_ where the lower numbered molecules are higher scored and we set the metrics to be top-k with k=10. Then, if the models predicts _mol2_, _mol4_, _mol1_, _mol9_ as  5, 3, 8, 2, but predicts _mol3_, _mol5_, _mol6_, _mol7_, _mol8_ and _mol10_ as 19, 25, 11, 32, 25, 15, then this would evaluate to a top-k of 4/10 (0.4). This might give a measure of how well the model is able to predict in the region of interest.
 
-You can do multiple evaluations at each run by supplying a longer list `[100, 1000]`.
+ℹ️ Using R2_model, R2_k and top-k requires an additional prediction during AL-iterations. Prediction is resource intensive when using the pairwise algorithm and so it is advised not to use these when conducting pairwise (PADRE) experiments.
 
 ### Configuration documentation
 #### Create multiple experiments

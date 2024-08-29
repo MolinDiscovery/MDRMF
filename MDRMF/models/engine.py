@@ -110,7 +110,7 @@ class Engine:
 
     def _RF(self, **kwargs):
         from sklearn.ensemble import RandomForestRegressor
-        return RandomForestRegressor(n_jobs=num_cores, random_state=42, **kwargs)
+        return RandomForestRegressor(n_jobs=-1, random_state=42, **kwargs)
     
     def _MLP(self, **kwargs):
         from sklearn.neural_network import MLPRegressor
@@ -118,11 +118,11 @@ class Engine:
     
     def _KNN(self, **kwargs):
         from sklearn.neighbors import KNeighborsRegressor
-        return KNeighborsRegressor(**kwargs)
+        return KNeighborsRegressor(n_jobs=-1, **kwargs)
 
     def _LGBM(self, **kwargs):
         import lightgbm as lgb
-        return lgb.LGBMRegressor(verbose=-1, random_state=42, **kwargs)
+        return lgb.LGBMRegressor(n_jobs=-1, verbose=-1, random_state=42, **kwargs)
     
     def _DT(self, **kwargs):
         from sklearn.tree import DecisionTreeRegressor
