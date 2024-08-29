@@ -1,4 +1,4 @@
-- results_path: /Users/jacobmolinnielsen/dev/MDRMF-project/results/03-article-results/pairwise/
+#- results_path: /Users/jacobmolinnielsen/dev/MDRMF-project/results/03-article-results/pairwise/
 
 - unique_initial_sample:
     seeds: [
@@ -368,7 +368,7 @@
     name: morgan
     replicate: 30
 
-    dataset: datasets/dataset_morgan_shuffled.pkl
+    dataset: /home/jmni/dev/MDRMF/datasets/dataset_morgan_shuffled.pkl
 
     model:
         name: LGBM
@@ -385,7 +385,7 @@
 - Experiment:
     name: MACCS
 
-    dataset: datasets/dataset_MACCS_shuffled.pkl
+    dataset: /home/jmni/dev/MDRMF/datasets/dataset_MACCS_shuffled.pkl
 
     model:
         name: LGBM
@@ -402,7 +402,7 @@
 - Experiment:
     name: avalon
 
-    dataset: datasets/dataset_avalon_shuffled.pkl
+    dataset: /home/jmni/dev/MDRMF/datasets/dataset_avalon_shuffled.pkl
 
     model:
         name: LGBM
@@ -419,7 +419,7 @@
 - Experiment:
     name: rdk
 
-    dataset: datasets/dataset_rdk_shuffled.pkl
+    dataset: /home/jmni/dev/MDRMF/datasets/dataset_rdk_shuffled.pkl
 
     model:
         name: LGBM
@@ -437,7 +437,7 @@
     name: rdkit2D
     replicate: 5
 
-    dataset: datasets/dataset_rdkit2D_shuffled.pkl
+    dataset: /home/jmni/dev/MDRMF/datasets/dataset_rdkit2D_shuffled.pkl
 
     model:
         name: LGBM
@@ -454,7 +454,7 @@
 - Experiment:
     name: MQN
 
-    dataset: datasets/dataset_MQN_shuffled.pkl
+    dataset: /home/jmni/dev/MDRMF/datasets/dataset_mqn_shuffled.pkl
 
     model:
         name: LGBM
@@ -471,7 +471,7 @@
 - Experiment:
     name: CDDD
 
-    dataset: datasets/dataset_CDDD_shuffled.pkl
+    dataset: /home/jmni/dev/MDRMF/datasets/dataset_CDDD_shuffled.pkl
 
     model:
         name: LGBM
