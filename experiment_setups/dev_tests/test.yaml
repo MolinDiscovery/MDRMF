@@ -1,11 +1,5 @@
 #test.yaml
-- Protocol_name: PCA_test
-
-
-- save_models: False
-- save_datasets: False
-- save_graphs: True
-- save_nothing: True
+- save_nothing: False
 
 
 - unique_initial_sample:
@@ -14,17 +8,17 @@
 
 - Experiment:
     name: 01_RF_MQN
-    replicate: 5
+    replicate: 2
 
-    dataset: datasets/dataset_morgan_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/dataset_mqn_shuffled.pkl
 
     model:
-      name: RFModeller
+      name: RF
       iterations: 5
-      acquisition_size: 100
-      acquisition_method: tanimoto
+      acquisition_size: 20
+      acquisition_method: greedy
       #add_noise: 20
 
     metrics:
-      names: [top-k, top-k-acquired]
+      names: [top-k-acquired]
       k: [100]
