@@ -365,79 +365,79 @@
 ]
 
 
-- Experiment:
-    name: morgan
+# - Experiment:
+#     name: morgan
 
-    dataset: /home/jmni/dev/MDRMF/datasets/DTP_morgan_shuffled.pkl
+#     dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_morgan_shuffled.pkl
 
-    model:
-        name: RF
-        iterations: 5
-        acquisition_size: 20
-        acquisition_method: greedy
-        use_pairwise: True
+#     model:
+#         name: RF
+#         iterations: 5
+#         acquisition_size: 20
+#         acquisition_method: greedy
+#         use_pairwise: True
 
-    metrics: 
-        names: [top-k, top-k-acquired]
-        k: [1320]
-
-
-- Experiment:
-    name: MACCS
-
-    dataset: /home/jmni/dev/MDRMF/datasets/DTP_MACCS_shuffled.pkl
-
-    model:
-        name: RF
-        iterations: 5
-        acquisition_size: 20
-        acquisition_method: greedy
-        use_pairwise: True
-
-    metrics: 
-        names: [top-k, top-k-acquired]
-        k: [1320]
+#     metrics: 
+#         names: [top-k, top-k-acquired]
+#         k: [1320]
 
 
-- Experiment:
-    name: avalon
+# - Experiment:
+#     name: MACCS
 
-    dataset: /home/jmni/dev/MDRMF/datasets/DTP_avalon_shuffled.pkl
+#     dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MACCS_shuffled.pkl
 
-    model:
-        name: RF
-        iterations: 5
-        acquisition_size: 20
-        acquisition_method: greedy
-        use_pairwise: True
+#     model:
+#         name: RF
+#         iterations: 5
+#         acquisition_size: 20
+#         acquisition_method: greedy
+#         use_pairwise: True
 
-    metrics: 
-        names: [top-k, top-k-acquired]
-        k: [1320]
+#     metrics: 
+#         names: [top-k, top-k-acquired]
+#         k: [1320]
 
 
-- Experiment:
-    name: rdk
-    replicate: 30
+# - Experiment:
+#     name: avalon
 
-    dataset: /home/jmni/dev/MDRMF/datasets/DTP_rdk_shuffled.pkl
+#     dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_avalon_shuffled.pkl
 
-    model:
-        name: RF
-        iterations: 5
-        acquisition_size: 20
-        acquisition_method: greedy
-        use_pairwise: True        
+#     model:
+#         name: RF
+#         iterations: 5
+#         acquisition_size: 20
+#         acquisition_method: greedy
+#         use_pairwise: True
 
-    metrics: 
-        names: [top-k, top-k-acquired]
-        k: [1320]        
+#     metrics: 
+#         names: [top-k, top-k-acquired]
+#         k: [1320]
+
+
+# - Experiment:
+#     name: rdk
+#     replicate: 30
+
+#     dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_rdk_shuffled.pkl
+
+#     model:
+#         name: RF
+#         iterations: 5
+#         acquisition_size: 20
+#         acquisition_method: greedy
+#         use_pairwise: True        
+
+#     metrics: 
+#         names: [top-k, top-k-acquired]
+#         k: [1320]        
 
 
 - Experiment:
     name: rdkit2D
 
-    dataset: /home/jmni/dev/MDRMF/datasets/DTP_rdkit2D_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_rdkit2D_shuffled.pkl
 
     model:
         name: RF
@@ -454,7 +454,7 @@
 - Experiment:
     name: MQN
 
-    dataset: /home/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
 
     model:
         name: RF
@@ -471,7 +471,7 @@
 - Experiment:
     name: CDDD
 
-    dataset: /home/jmni/dev/MDRMF/datasets/DTP_CDDD_fix2_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_CDDD_fix2_shuffled.pkl
 
     model:
         name: RF

@@ -368,7 +368,7 @@
     name: morgan
     replicate: 30
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_morgan_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/dataset_morgan_shuffled.pkl
 
     model:
         name: DT
@@ -385,7 +385,7 @@
 - Experiment:
     name: MACCS
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_MACCS_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/dataset_MACCS_shuffled.pkl
 
     model:
         name: DT
@@ -402,7 +402,7 @@
 - Experiment:
     name: avalon
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_avalon_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/dataset_avalon_shuffled.pkl
 
     model:
         name: DT
@@ -419,7 +419,7 @@
 - Experiment:
     name: rdk
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_rdk_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/dataset_rdk_shuffled.pkl
 
     model:
         name: DT
@@ -437,7 +437,7 @@
     name: rdkit2D
     replicate: 5
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_rdkit2D_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/dataset_rdkit2D_shuffled.pkl
 
     model:
         name: DT
@@ -454,7 +454,7 @@
 - Experiment:
     name: MQN
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_mqn_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/dataset_mqn_shuffled.pkl
 
     model:
         name: DT
@@ -471,7 +471,7 @@
 - Experiment:
     name: CDDD
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_CDDD_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/dataset_CDDD_shuffled.pkl
 
     model:
         name: DT

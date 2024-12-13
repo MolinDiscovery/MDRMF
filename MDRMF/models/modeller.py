@@ -451,8 +451,7 @@ class Modeller:
             chunk_size = dataset_size // num_cores
             n_chunks = num_cores
 
-
-        with parallel_config(backend='loky'):
+        with parallel_config('loky'):
             results = Parallel(n_jobs=num_cores)(
                 delayed(self.parallel_predict_chunk)(i, min(i + chunk_size, dataset_size), engine, train_dataset, predict_dataset)
                 for i in range(0, dataset_size, chunk_size)
