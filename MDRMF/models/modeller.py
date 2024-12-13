@@ -11,8 +11,6 @@ from MDRMF.dataset import Dataset
 from MDRMF.models.engine import Engine
 from joblib import Parallel, delayed, parallel_config
 
-num_cores = os.cpu_count()
-
 class Modeller:
 
     def __init__(
@@ -443,6 +441,7 @@ class Modeller:
         return mu, std
     
     def _pairwise_predict(self, train_dataset, predict_dataset, engine):
+        num_cores = os.cpu_count()
         dataset_size = predict_dataset.X.shape[0]
         chunk_size = 1000  # Maximum chunk size to avoid memory issues
 
@@ -452,7 +451,8 @@ class Modeller:
             chunk_size = dataset_size // num_cores
             n_chunks = num_cores
 
-        with parallel_config('threading'):
+
+        with parallel_config(backend='loky'):
             results = Parallel(n_jobs=num_cores)(
                 delayed(self.parallel_predict_chunk)(i, min(i + chunk_size, dataset_size), engine, train_dataset, predict_dataset)
                 for i in range(0, dataset_size, chunk_size)

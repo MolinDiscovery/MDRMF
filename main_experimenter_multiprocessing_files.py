@@ -9,8 +9,12 @@ def run_experiment(file_name):
 if __name__ == "__main__":
     # List of your YAML files
     file_names = [
-        "experiment_setups/article/(article) 13 noise nudged test 10k.yaml",
-        "experiment_setups/article/(article) 14 noise nudged test 140k.yaml",
+        # "experiment_setups/03-article/130k/01-RF-desc-130k.yaml",
+        # "experiment_setups/03-article/130k/02-DT-desc-130k.yaml",
+        # "experiment_setups/03-article/130k/03-SVR-desc-130k.yaml",
+        "experiment_setups/03-article/130k/04-LGBM-desc-130k.yaml",
+        # "experiment_setups/03-article/130k/05-KNN-desc-130k.yaml",
+        "experiment_setups/03-article/130k/06-MLP-desc-130k.yaml"
     ]
 
     # # Create a pool of worker processes

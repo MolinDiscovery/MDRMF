@@ -368,7 +368,7 @@
     name: morgan
     replicate: 30
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_morgan_shuffled.pkl
+    dataset: datasets/dataset_morgan_shuffled.pkl
 
     model:
         name: KNN
@@ -385,7 +385,7 @@
 - Experiment:
     name: MACCS
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_MACCS_shuffled.pkl
+    dataset: datasets/dataset_MACCS_shuffled.pkl
 
     model:
         name: KNN
@@ -402,7 +402,7 @@
 - Experiment:
     name: avalon
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_avalon_shuffled.pkl
+    dataset: datasets/dataset_avalon_shuffled.pkl
 
     model:
         name: KNN
@@ -419,7 +419,7 @@
 - Experiment:
     name: rdk
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_rdk_shuffled.pkl
+    dataset: datasets/dataset_rdk_shuffled.pkl
 
     model:
         name: KNN
@@ -437,7 +437,7 @@
     name: rdkit2D
     replicate: 5
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_rdkit2D_shuffled.pkl
+    dataset: datasets/dataset_rdkit2D_shuffled.pkl
 
     model:
         name: KNN
@@ -454,7 +454,7 @@
 - Experiment:
     name: MQN
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_mqn_shuffled.pkl
+    dataset: datasets/dataset_mqn_shuffled.pkl
 
     model:
         name: KNN
@@ -471,7 +471,7 @@
 - Experiment:
     name: CDDD
 
-    dataset: /home/jmni/dev/MDRMF/datasets/dataset_CDDD_shuffled.pkl
+    dataset: datasets/dataset_CDDD_shuffled.pkl
 
     model:
         name: KNN
