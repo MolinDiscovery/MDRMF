@@ -364,7 +364,7 @@
 
 
 - Experiment:
-    name: RF CDDD feature importance 20
+    name: RF MQN greedy 60 most important features 20
 
     dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
 
@@ -381,7 +381,7 @@
 
 
 - Experiment:
-    name: RF CDDD feature importance 120
+    name: RF MQN greedy 60 most important features
 
     dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
 

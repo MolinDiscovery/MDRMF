@@ -364,7 +364,7 @@
 
 
 - Experiment:
-    name: RF CDDD feature importance 20
+    name: EI(RF-MQN)
 
     dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
 
@@ -372,8 +372,8 @@
         name: RF
         iterations: 5
         acquisition_size: 20
-        acquisition_method: greedy
-        feature_importance_opt: {'iterations': 5, 'features_limit': 20}
+        acquisition_method: EI
+        use_pairwise: True
 
     metrics: 
         names: [top-k, top-k-acquired]
@@ -381,7 +381,7 @@
 
 
 - Experiment:
-    name: RF CDDD feature importance 120
+    name: Greedy(RF-MQN)
 
     dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
 
@@ -390,7 +390,75 @@
         iterations: 5
         acquisition_size: 20
         acquisition_method: greedy
-        feature_importance_opt: {'iterations': 5, 'features_limit': 60}
+        use_pairwise: True
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]
+
+
+- Experiment:
+    name: LCB(RF-MQN)
+
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
+
+    model:
+        name: RF
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: LCB
+        use_pairwise: True
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]
+
+
+- Experiment:
+    name: Morgan Tanimoto(RF-MQN)
+
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_morgan_shuffled.pkl
+
+    model:
+        name: RF
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: tanimoto
+        # use_pairwise: True
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]
+
+
+- Experiment:
+    name: LCB(RF-MQN)
+
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
+
+    model:
+        name: RF
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: LCB
+        use_pairwise: True
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]
+
+
+- Experiment:
+    name: MU(RF-MQN)
+
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
+
+    model:
+        name: RF
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: MU
+        use_pairwise: True
 
     metrics: 
         names: [top-k, top-k-acquired]

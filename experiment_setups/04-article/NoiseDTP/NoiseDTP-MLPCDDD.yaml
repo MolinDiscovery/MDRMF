@@ -364,16 +364,17 @@
 
 
 - Experiment:
-    name: RF CDDD feature importance 20
+    name: noise 1
 
-    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_CDDD_fix2_shuffled.pkl
 
     model:
-        name: RF
+        name: MLP
         iterations: 5
         acquisition_size: 20
         acquisition_method: greedy
-        feature_importance_opt: {'iterations': 5, 'features_limit': 20}
+        add_noise: 1
+        use_pairwise: True
 
     metrics: 
         names: [top-k, top-k-acquired]
@@ -381,16 +382,35 @@
 
 
 - Experiment:
-    name: RF CDDD feature importance 120
+    name: noise 2
 
-    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_MQN_shuffled.pkl
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_CDDD_fix2_shuffled.pkl
 
     model:
-        name: RF
+        name: MLP
         iterations: 5
         acquisition_size: 20
         acquisition_method: greedy
-        feature_importance_opt: {'iterations': 5, 'features_limit': 60}
+        add_noise: 2
+        use_pairwise: True
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [1320]
+
+
+- Experiment:
+    name: noise 3
+
+    dataset: /groups/kemi/jmni/dev/MDRMF/datasets/DTP_CDDD_fix2_shuffled.pkl
+
+    model:
+        name: MLP
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: greedy
+        add_noise: 3
+        use_pairwise: True
 
     metrics: 
         names: [top-k, top-k-acquired]
