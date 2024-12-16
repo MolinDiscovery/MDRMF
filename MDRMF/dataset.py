@@ -418,3 +418,30 @@ class Dataset:
             self.X, self.y, self.ids, self.w, test_size=test_size, random_state=None, shuffle=shuffle
         )
         return Dataset(X_train, y_train, ids_train, w_train), Dataset(X_test, y_test, ids_test, w_test)
+    
+
+    def remove_duplicates(self):
+        """
+        Removes duplicate entries based on the 'ids' field. 
+        Only the first occurrence of each unique ID is kept.
+
+        After this operation, the dataset will contain no duplicate IDs.
+        """
+        # Use np.unique with return_index to get indices of first occurrences
+        _, unique_indices = np.unique(self.ids, return_index=True)
+        # Sort indices to maintain the original order where possible
+        unique_indices = np.sort(unique_indices)
+
+        # Reindex the dataset
+        self.X = self.X[unique_indices]
+        self.y = self.y[unique_indices]
+        self.ids = self.ids[unique_indices]
+        self.w = self.w[unique_indices]
+
+
+    def get_range(self, start, end):
+        # Sort by y
+        temp_dataset = self.copy()
+        temp_dataset.sort_by_y()
+        indices = np.arange(start, end)
+        return temp_dataset.get_points(indices)
