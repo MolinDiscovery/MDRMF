@@ -61,7 +61,7 @@ monitor_thread.start()
 # >>>Insert your code below!! <<<
 # Here I am using my active learning package (MDRMF), that reads a configuration file
 # and the conduct_all_experiments() method executes it.
-exp = Experimenter("experiment_setups/04-article/enrichmentOuter130k-pair/01_enrichment130k_CDDD_MLP_EI-pair-outer.yaml")
+exp = Experimenter("experiment_setups/04-article/feat_import130k/feat_import130k_RF_Padre.yaml")
 exp.conduct_all_experiments()
 
 stop_monitoring.set()
