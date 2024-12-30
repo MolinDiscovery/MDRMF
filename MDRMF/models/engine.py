@@ -1,8 +1,8 @@
 # engine.py
 import numpy as np
-import os
-from joblib import Parallel, delayed
-num_cores = os.cpu_count()
+#import os
+# from joblib import Parallel, delayed
+# num_cores = os.cpu_count()
 
 class Engine:
     """

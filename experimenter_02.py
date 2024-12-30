@@ -67,7 +67,7 @@ monitor_thread = threading.Thread(target=monitor_resources)
 monitor_thread.start()
 
 # Run the experiments
-exp = Experimenter("experiment_setups/04-article/enrichmentOuter130k-pair/02_enrichment130k_CDDD_MLP_EI-pair-outer.yaml")
+exp = Experimenter("experiment_setups/04-article/DDS10/enrichment10k/01_enrichment10k_RF.yaml")
 exp.conduct_all_experiments()
 
 # Signal the monitoring thread to stop and wait for it to finish

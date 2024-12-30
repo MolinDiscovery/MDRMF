@@ -4,7 +4,6 @@ import psutil
 import time
 import os
 import threading
-import socket
 
 def generate_bar(usage, length=10):
     """Generate a simple text-based bar for the given usage percentage."""
@@ -31,11 +30,8 @@ def monitor_resources():
     # Get the current directory
     current_dir = os.getcwd()
 
-    # Get the hostname to ensure the log file is unique to this node
-    hostname = socket.gethostname()
-
-    # Set the log file path in the current directory with the hostname included
-    log_file_path = os.path.join(current_dir, f"cpu_memory_usage_{hostname}.log")
+    # Set the log file path in the current directory
+    log_file_path = os.path.join(current_dir, "cpu_memory_usage.log")
 
     # Continuously update the log file with current CPU and memory usage
     with open(log_file_path, "w") as f:
@@ -67,7 +63,7 @@ monitor_thread = threading.Thread(target=monitor_resources)
 monitor_thread.start()
 
 # Run the experiments
-exp = Experimenter("experiment_setups/04-article/DDS10/enrichment10k/02_enrichment10k_LGBM_PADRE.yaml")
+exp = Experimenter("experiment_setups/03-article/noise130k/noise130k_rdkit2D.yaml")
 exp.conduct_all_experiments()
 
 # Signal the monitoring thread to stop and wait for it to finish
