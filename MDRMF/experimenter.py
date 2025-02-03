@@ -433,7 +433,7 @@ class Experimenter:
                 print('Indices: ', unique_seeds)
                 model_input = Modeller(dataset_model_replicate, engine=model_name, evaluator=evaluator, seeds=unique_seeds, model_graphs=self.save_graphs, **model_params)
             else:
-                model_input = Modeller(dataset_model_replicate, evaluator=evaluator, model_graphs=self.save_graphs, **model_params)
+                model_input = Modeller(dataset_model_replicate, engine=model_name, evaluator=evaluator, model_graphs=self.save_graphs, **model_params)
             model = Model(model=model_input)
             model.train()
 

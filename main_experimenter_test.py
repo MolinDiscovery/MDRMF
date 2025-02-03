@@ -3,5 +3,5 @@
 from MDRMF.experimenter import Experimenter
 from MDRMF.dataset import Dataset
 
-exp = Experimenter("experiment_setups/04-article/DDS10/acquisition10k_MLP_MQN.yaml")
+exp = Experimenter("experiment_setups/04-article/DDS10/MLP_MQN_rdkit2d-10k_test.yaml")
 exp.conduct_all_experiments()

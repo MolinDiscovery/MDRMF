@@ -15,7 +15,7 @@ if __name__ == "__main__":
     #     "experiment_setups/03-article/(article) 14 noise nudged test 140k.yaml",
     # ]
 
-    dir =  Path("/groups/kemi/jmni/dev/MDRMF/experiment_setups/03-article/enrichment10k-pair").rglob('*')
+    dir =  Path("experiment_setups/04-article/DDS10/enrichmentMLP10kOuter").rglob('*')
     
     for item in dir:
         if item.suffix == '.yaml' or item.suffix == '.yml':

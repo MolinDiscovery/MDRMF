@@ -120,9 +120,9 @@ class Modeller:
             acq_dataset = self.dataset.get_points(list(picks_idx), remove_points=True)
 
         if self.acquisition_method == "MU":
-
+            # MU = most uncertainty.
             _, uncertainty = self.predict(self.dataset, self.model_dataset, return_uncertainty=True)
-            # MU stands for most uncertainty.
+            
 
             # Finds the indices with the highest uncertainty.
             indices = np.argpartition(uncertainty, -self.acquisition_size)[-self.acquisition_size:]
@@ -320,7 +320,7 @@ class Modeller:
             acquired_pts = self._acquisition(model_dataset=self.model_dataset, add_noise=self.add_noise)
 
             self.model_dataset = self.dataset.merge_datasets([self.model_dataset, acquired_pts])
-
+            
             # Reset model before training if true
             if self.retrain:
                 self.engine = self.engine = Engine(self.engine_name, **self.kwargs)
@@ -370,7 +370,7 @@ class Modeller:
                 preds, _ = self._pairwise_predict(dataset_train, dataset, self.engine)
             else:
                 preds, _ = self.engine.predict(dataset.X, no_uncertainty=True)
-        
+
         if return_uncertainty:
             return preds, uncertainty
         else:

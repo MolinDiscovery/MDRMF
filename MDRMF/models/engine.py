@@ -1,6 +1,6 @@
 # engine.py
 import numpy as np
-#import os
+# import os
 # from joblib import Parallel, delayed
 # num_cores = os.cpu_count()
 
@@ -27,7 +27,7 @@ class Engine:
     def __init__(self, model='RF', **kwargs) -> None:
         self.model = model
         self.engine = self.engine_select(model, **kwargs)
-    
+
     def engine_select(self, model, **kwargs):
         engine_funcs = {
             'RF': self._RF,
@@ -37,7 +37,7 @@ class Engine:
             'DT': self._DT,
             'SVR': self._SVR,
         }
-        
+
         engine_func = engine_funcs[model]
         return engine_func(**kwargs)
 
@@ -55,7 +55,6 @@ class Engine:
         if self.model == 'SVR':
             self.engine.fit(X, y, **kwargs)            
 
-    
     def predict(self, X, no_uncertainty=False):
         if self.model == 'RF':
             if no_uncertainty == False:
@@ -104,18 +103,17 @@ class Engine:
 
         return mean_preds, uncertainty
 
-
     def access_engine(self):
         return self.engine
 
     def _RF(self, **kwargs):
         from sklearn.ensemble import RandomForestRegressor
         return RandomForestRegressor(n_jobs=-1, random_state=42, **kwargs)
-    
+
     def _MLP(self, **kwargs):
         from sklearn.neural_network import MLPRegressor
-        return MLPRegressor(random_state=42, **kwargs)
-    
+        return MLPRegressor(**kwargs)
+
     def _KNN(self, **kwargs):
         from sklearn.neighbors import KNeighborsRegressor
         return KNeighborsRegressor(n_jobs=-1, **kwargs)
@@ -123,11 +121,11 @@ class Engine:
     def _LGBM(self, **kwargs):
         import lightgbm as lgb
         return lgb.LGBMRegressor(n_jobs=-1, verbose=-1, random_state=42, **kwargs)
-    
+
     def _DT(self, **kwargs):
         from sklearn.tree import DecisionTreeRegressor
         return DecisionTreeRegressor(random_state=42, **kwargs)
-    
+
     def _SVR(self, **kwargs):
         from sklearn.svm import SVR
         return SVR(**kwargs)
