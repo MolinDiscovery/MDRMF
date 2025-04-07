@@ -1,12 +1,12 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [MDRMF](#mdrmf)
 - [Why is it called MDRMF?](#why-is-it-called-mdrmf)
 - [What does MDRMF do?](#what-does-mdrmf-do)
 - [Installation](#installation)
 - [How to use MDRMF](#how-to-use-mdrmf)
   - [Testing your setup (retrospective study)](#testing-your-setup-retrospective-study)
+    - [Execution](#execution)
     - [data](#data)
     - [featurizer](#featurizer)
     - [model](#model)
@@ -22,11 +22,8 @@
       - [Adding noise to the data](#adding-noise-to-the-data)
       - [Data enrichment](#data-enrichment)
       - [Feature importance](#feature-importance)
+- [Using experimental data (prospective study)](#using-experimental-data-prospective-study)
 
-
-# MDRMF
-Multiple drug resistance machine fishing
-- A project to explore ML models using active pool-based learning (machine fishing) for transporters implicated in MDR.
 
 # Why is it called MDRMF?
 MDRMF is a python package that was developed as part a project to find inhibitors of ABC transporters which cause multiple-drug resistance towards chemotherapeutics. The machine fishing part refers to the fact that active learning can be seen as fishing for drug candidates in a sea of molecules.
@@ -83,6 +80,18 @@ Here is an example of the most simple setup.
 ```
 
 Here, one experiment will be conducted named `retrospective_docking_experiment`.
+
+There are two ways to execute this file: using a CLI command or from a python script.
+### Execution
+CLI:
+```bash
+python -m MDRMF.experimenter config-file.yaml
+```
+Python:
+```python
+exp = Experimenter("config-file.yaml")
+exp.conduct_all_experiments()
+```
 
 ### data
 This experiment reads a .csv file where two required things are specified - a `SMILES_col` and a `score_col`. Finally, an optional `ids_col` is set to the SMILES column in the .csv file (a sequantial list of numbers will be generated for ids if left unspecified).
@@ -307,4 +316,55 @@ You can declare a feature importance optimization where upon you can declare num
         acquisition_size: 20
         acquisition_method: greedy
         feature_importance_opt: {'iterations': 5, 'features_limit': 20}
+```
+
+# Using experimental data (prospective study)
+
+To do a prospective study where you supply labels from experimental data the procecure is mostly the same as for a prospective study. Please refer to the section [Testing your setup (retrospective study)](#testing-your-setup-retrospective-study) for details on how to setup the configuration file.
+
+To do a prospective study you must use the `labelExperiment` keyword instead of `Experiment`. Here is an example file
+
+```yaml
+- labelExperiment:
+    name: prospective_docking_experiment
+
+    data:
+      datafile: unlabeled_data.csv
+      SMILES_col: SMILES
+      scores_col: measured_values
+      ids_col: SMILES
+
+    featurizer:
+      name: morgan
+
+    model:
+        name: RF
+        iterations: 5
+        initial_sample_size: 10
+        acquisition_size: 20
+        acquisition_method: greedy
+
+    metrics: 
+        names: [top-k-acquired]
+        k: [100]
+```
+
+The .csv file should contain a column with SMILES and a score column. For the first activ learning iteration you will select random molecules from the dataset and test them in the laboratory. The values from these tests should be filled into the score column in the .csv file. The software will then recognise there is data for these molecules and create a model from these. Subsequently, it will suggest the next molecules to test.
+
+A .csv file could look like this:
+
+```
+score,  SMILES
+1,      C[C@@H](NC(=O)N1C[C@H](c2ccccc2)[C@H]2COCC[C@H]21)c1ccc(NC(=O)NC2CC2)cc1
+,       O=C(Nc1cccc(C(=O)N2CCC(c3c[nH]c4ncccc34)CC2)c1)[C@@H]1Cc2ccccc2O1
+8,      Cc1nn(-c2ccccc2)c2nc(C(=O)N3CCC([C@H]4C(=O)Nc5ccccc54)CC3)ccc12
+3,      Cc1cc(C)cc(C(=O)N2CCC[C@H](C(=O)NCc3cccc([C@@]4(C)NC(=O)NC4=O)c3)C2)c1
+,       CS(=O)(=O)c1ccc(F)c(C(=O)Nc2ccc(-c3nc(-c4ccccc4)n[nH]3)cc2)c1
+,       O=C1Nc2ccccc2[C@@H]1C1CCN(C(=O)c2cccc(N3C(=O)c4ccccc4C3=O)c2)CC1
+5,      NC(=O)[C@H]1CCCN(c2ccc(C(=O)N3CCC(c4cc5ccccc5[nH]4)CC3)cc2)C1
+,       Cn1c(=O)[nH]c2ccc(C(=O)NCC[C@H]3CN(c4ncnc5[nH]ncc45)c4ccccc43)cc21
+,       O=C(NCC(=O)N1CCc2ccccc2C1)[C@@H]1C[C@H](O)CN1C(=O)OCc1ccccc1
+9,      C#Cc1cc(F)c(NC(=O)C(=O)N2CC=C(c3c[nH]c4ncccc34)CC2)c(F)c1
+
+[...more data]
 ```

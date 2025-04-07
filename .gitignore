@@ -8,8 +8,10 @@ build
 
 # Different files
 updatepypi.txt
+setup.py
 
 # Different folders
 /datasets/
 /data_files/
 /data_cleaning/
+/dev_files/

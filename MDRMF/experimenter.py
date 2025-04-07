@@ -206,13 +206,6 @@ class Experimenter:
         
     
     def _calculate_unique_ids(self, exp_config: dict, unique_sample_size: int, nudging: list = []):
-        '''
-        Maybe I need to make the method return the ids and not the mere indices.
-        Doing the nudging like now where we just sort and return indices
-        for the sorted data will also require the working dataset to be sorted,
-        which might not always be the case. Currently most datasets are sorted
-        by y though, but it can be a future problem. << This has been implemented now.
-        '''
         
         if nudging != []:
             nudged_samples_size = int(unique_sample_size / 2)

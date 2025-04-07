@@ -1,13 +1,46 @@
-# dataset.py
+"""
+Dataset module.
 
-from re import U
+This module provides the Dataset class for handling and manipulating datasets in machine learning tasks.
+It offers functionalities for splitting, shuffling, merging, sampling, and other dataset operations.
+All methods are documented using Google style docstrings.
+"""
+
+from re import U  # Unused import, consider removing if not required
 import numpy as np
 import pickle
 
+
 class Dataset:
+    """
+    A class to represent and manipulate a dataset.
+
+    Attributes:
+        X (np.ndarray): Feature data.
+        y (np.ndarray): Labels or targets.
+        ids (np.ndarray): Unique identifiers for each sample.
+        w (np.ndarray): Weights for each sample.
+    """
 
     def __init__(self, X, y, ids=None, w=None, keep_unlabeled_data_only=False) -> None:
-        
+        """
+        Initialize the Dataset object.
+
+        This constructor converts input data to NumPy arrays, validates their dimensions, and optionally removes
+        invalid entries or retains only unlabeled data.
+
+        Args:
+            X (array-like): Feature data.
+            y (array-like): Labels corresponding to each sample.
+            ids (array-like, optional): Unique identifiers for each sample. If None, sequential integers are assigned.
+            w (array-like, optional): Weights for each sample. If None, all samples are given a weight of 1.
+            keep_unlabeled_data_only (bool, optional): If True, only retains data points with NaN labels.
+                Otherwise, removes entries with NaN values in X or y. Defaults to False.
+
+        Raises:
+            ValueError: If X cannot be stacked into a 2D array-like structure with consistent inner dimensions.
+            ValueError: If the input data arrays have inconsistent numbers of samples.
+        """
         # Convert inputs to NumPy arrays
         X = np.asarray(X)
         y = np.asarray(y)
@@ -21,74 +54,78 @@ class Dataset:
             except ValueError as e:
                 raise ValueError("X should be a 2D array-like structure with consistent inner dimensions.") from e
 
-        # Check that all ids are unique
-        # total_size = y.size
-        # unique_ids_size = (np.unique(ids)).size
-        # if total_size != unique_ids_size:
-        #     raise ValueError("All ids are not unique.")
-
+        # Check that all input arrays have the same length
         self.X = X
         self.y = y
         self.ids = ids
         self.w = w
 
-        # Validate the input data
         if not all(len(data) == len(self.X) for data in [self.y, self.ids, self.w]):
             raise ValueError("Inconsistent input data: all input data should have the same number of samples.")
 
-        # Remove potential NaN values.         
-        if keep_unlabeled_data_only == False:
+        # Remove potential NaN values or keep only unlabeled data
+        if keep_unlabeled_data_only is False:
             self.remove_invalid_entries()
-
-        # If the data is semi-labeled
-        # the unlabeled points should be preserved.
-        if keep_unlabeled_data_only == True:
+        if keep_unlabeled_data_only is True:
             self.keep_unlabel_entries_only()
-        
 
     def __repr__(self):
+        """
+        Return a string representation of the Dataset.
+
+        Returns:
+            str: A string showing the shapes of X, y, w, and the ids.
+        """
         return f"<Dataset X.shape: {self.X.shape}, y.shape: {self.y.shape}, w.shape: {self.w.shape}, ids: {self.ids}>"
 
-
     def save(self, filename):
+        """
+        Save the Dataset object to a file using pickle.
+
+        Args:
+            filename (str): The file path where the Dataset object will be saved.
+        """
         with open(filename, "wb") as f:
             pickle.dump(self, f)
 
-
     @staticmethod
     def load(filename):
+        """
+        Load a Dataset object from a file.
+
+        Args:
+            filename (str): The file path from which to load the Dataset object.
+
+        Returns:
+            Dataset: The loaded Dataset object.
+        """
         with open(filename, "rb") as f:
             return pickle.load(f)
-    
 
     def get_length(self):
         """
-        Get the length of the dataset.
+        Return the number of samples in the dataset.
 
         Returns:
             int: The length of the dataset.
         """
         return len(self.w)
 
-
     def get_points(self, indices, remove_points=False, unlabeled=False):
+        """
+        Retrieve specific points from the dataset based on provided indices.
 
-        '''
-        Retrieves specific points from the dataset based on the provided list of indices. 
-        This method can optionally remove these points from the dataset after retrieval.
-
-        Parameters:
-            indices (list): A list of indices specifying the data points to retrieve from the dataset.
-            remove_points (bool, optional): If set to True, the data points corresponding to the provided indices will be removed from the dataset. Defaults to False.
-            unlabeled (bool, optional): If set to True the retrieved dataset will not have NaN values removed.
+        Args:
+            indices (list or array-like): List of indices specifying the data points to retrieve.
+            remove_points (bool, optional): If True, removes the data points from the original dataset. Defaults to False.
+            unlabeled (bool, optional): If True, returns a dataset where NaN values are not removed. Defaults to False.
 
         Returns:
-            Dataset: A new Dataset object containing the data points specified by the indices. This dataset includes the features (`X`), labels/targets (`y`), identifiers (`ids`), and any additional weights (`w`) associated with these data points.
+            Dataset: A new Dataset object containing the selected data points.
 
         Note:
-            The removal of points from the dataset is an in-place operation. If `remove_points` is set to True, the original dataset will be modified.
-        '''
-
+            If `remove_points` is True, the removal is performed in-place on the original dataset.
+        """
         g_X = self.X[indices]
         g_y = self.y[indices]
         g_ids = self.ids[indices]
@@ -97,69 +134,90 @@ class Dataset:
         if remove_points:
             self.remove_points(indices)
 
-        if unlabeled == True:
+        if unlabeled:
             return Dataset(g_X, g_y, g_ids, g_w, keep_unlabeled_data_only=True)
         else:
             return Dataset(g_X, g_y, g_ids, g_w)
 
-    
     def get_points_from_ids(self, ids: list):
         """
-        Retrieves specific points from the dataset based on the provided list of identifiers.
+        Retrieve data points based on a list of identifiers.
 
-        Parameters:
-        ids (list): A list of identifiers specifying the data points to retrieve from the dataset.
+        Args:
+            ids (list): List of identifiers for the data points.
 
         Returns:
-        Dataset: A new Dataset object containing the data points specified by the identifiers. This dataset includes the features (`X`), labels/targets (`y`), identifiers (`ids`), and any additional weights (`w`) associated with these data points.
+            Dataset: A new Dataset object containing data points with the specified identifiers.
         """
         indices = np.where(np.isin(self.ids, ids))[0]
         return self.get_points(indices)
-    
 
     def get_indices_from_ids(self, ids: list):
         """
-        Retrieves the indices of specific points from the dataset based on the provided list of identifiers.
+        Retrieve indices for data points based on a list of identifiers.
 
-        Parameters:
-        ids (list): A list of identifiers specifying the data points to retrieve from the dataset.
+        Args:
+            ids (list): List of identifiers for the data points.
 
         Returns:
-        np.ndarray: An array of indices specifying the positions of the data points in the dataset.
+            np.ndarray: Array of indices corresponding to the provided identifiers.
         """
         return np.where(np.isin(self.ids, ids))[0]
 
-
     def get_samples(self, n_samples, remove_points=False, return_indices=False, unlabeled=False):
+        """
+        Randomly sample a subset of data points from the dataset.
+
+        Args:
+            n_samples (int): Number of samples to retrieve.
+            remove_points (bool, optional): If True, removes the sampled points from the original dataset. Defaults to False.
+            return_indices (bool, optional): If True, returns a tuple of the sampled Dataset and the indices of the sampled points.
+                Defaults to False.
+            unlabeled (bool, optional): If True, retains NaN values in labels. Defaults to False.
+
+        Returns:
+            Dataset or tuple: A new Dataset object containing the sampled data points, or a tuple (Dataset, indices)
+            if return_indices is True.
+        """
         random_indices = np.random.choice(len(self.y), size=n_samples, replace=False)
         g_X = self.X[random_indices]
         g_y = self.y[random_indices]
         g_ids = self.ids[random_indices]
         g_w = self.w[random_indices]
 
-        if unlabeled == True:
+        if unlabeled:
             sampled_dataset = Dataset(g_X, g_y, g_ids, g_w, keep_unlabeled_data_only=True)
         else:
-            sampled_dataset = Dataset(g_X, g_y, g_ids, g_w)        
+            sampled_dataset = Dataset(g_X, g_y, g_ids, g_w)
 
         if remove_points:
             self.remove_points(random_indices)
-        
+
         if return_indices:
             return sampled_dataset, random_indices
         else:
             return sampled_dataset
 
-
     def set_points(self, indices):
+        """
+        Update the dataset to only include data points at the specified indices.
+
+        Args:
+            indices (list or array-like): Indices of the data points to retain.
+        """
         self.X = self.X[indices]
         self.y = self.y[indices]
         self.ids = self.ids[indices]
         self.w = self.w[indices]
 
-
     def remove_points(self, indices):
-        indices = np.sort(indices)[::-1] # remove indices from desending order
+        """
+        Remove data points from the dataset at the specified indices.
+
+        Args:
+            indices (list or array-like): Indices of the data points to remove.
+        """
+        indices = np.sort(indices)[::-1]  # Remove indices in descending order
         mask = np.ones(len(self.X), dtype=bool)
         mask[indices] = False
         self.X = self.X[mask]
@@ -167,8 +225,13 @@ class Dataset:
         self.ids = self.ids[mask]
         self.w = self.w[mask]
 
-
     def sort_by_y(self, ascending=True):
+        """
+        Sort the dataset based on the labels (y values).
+
+        Args:
+            ascending (bool, optional): If True, sorts in ascending order; if False, in descending order. Defaults to True.
+        """
         sort_indices = np.argsort(self.y)
 
         if not ascending:
@@ -179,23 +242,13 @@ class Dataset:
         self.ids = self.ids[sort_indices]
         self.w = self.w[sort_indices]
 
-
     def shuffle(self):
         """
-        Randomly shuffles the entries of the dataset.
+        Shuffle the dataset randomly.
 
-        This method uses a random permutation to shuffle the indices of the dataset, and then rearranges
-        the dataset's attributes (features `X`, labels `y`, identifiers `ids`, and weights `w`) according to the
-        shuffled indices. This is useful for randomizing the order of data points, which can be beneficial for
-        machine learning algorithms that are sensitive to the order of data points, such as mini-batch gradient descent.
-
-        Note:
-            The shuffling is performed in-place; the original dataset is modified.
-
-        Example:
-            >>> dataset.shuffle()
-            This will randomly rearrange the entries in `dataset`.
-        """        
+        This method applies a random permutation to the data, shuffling features, labels, identifiers,
+        and weights in-place.
+        """
         shuffle_indices = np.random.permutation(len(self.y))
 
         self.X = self.X[shuffle_indices]
@@ -203,105 +256,100 @@ class Dataset:
         self.ids = self.ids[shuffle_indices]
         self.w = self.w[shuffle_indices]
 
-
     @staticmethod
     def merge_datasets(datasets):
-        # Initialize empty lists for X, y, ids, and w
+        """
+        Merge multiple Dataset objects into a single Dataset.
+
+        Args:
+            datasets (list of Dataset): List of Dataset objects to merge.
+
+        Returns:
+            Dataset: A new Dataset object that contains the concatenated data from all input datasets.
+        """
         X, y, ids, w = [], [], [], []
 
-        # Loop over the datasets
         for dataset in datasets:
-            # Append the data from each dataset to the corresponding list
             X.append(dataset.X)
             y.append(dataset.y)
             ids.append(dataset.ids)
             w.append(dataset.w)
 
-        # Convert lists to numpy arrays and concatenate along the first axis
         X = np.concatenate(X, axis=0)
         y = np.concatenate(y, axis=0)
         ids = np.concatenate(ids, axis=0)
         w = np.concatenate(w, axis=0)
 
-        # Return a new Dataset that combines the data from all the datasets
         return Dataset(X, y, ids, w)
-    
 
     @staticmethod
     def missing_points(original_dataset, model_dataset):
         """
-        Returns a dataset containing the points that are missing in the model dataset.
+        Identify and return data points that are present in the original dataset but missing in the model dataset.
 
         Args:
             original_dataset (Dataset): The original dataset.
-            model_dataset (Dataset): The model dataset.
+            model_dataset (Dataset): The dataset representing the model's current data.
 
         Returns:
-            Dataset: The dataset containing the missing points.
+            Dataset: A Dataset object containing the data points that are missing in the model dataset.
         """
-        # compare the ids
         points_in_model = np.isin(original_dataset.ids, model_dataset.ids, invert=True)
         dataset = original_dataset.get_points(points_in_model)
 
         return dataset
-    
 
     def copy(self):
+        """
+        Create a deep copy of the dataset.
+
+        Returns:
+            Dataset: A deep copy of the current dataset.
+        """
         import copy
         return copy.deepcopy(self)
 
-
     def remove_invalid_entries(self):
         """
-        Remove rows from the dataset where either X or y contains NaNs.
+        Remove data points where either the feature array (X) or the label array (y) contains NaN values.
         """
-        # Find indices where X or y contains NaNs
         invalid_indices_x = np.where(np.isnan(self.X).any(axis=1))[0]
         invalid_indices_y = np.where(np.isnan(self.y))[0]
 
-        # Combine the indices and remove duplicates
         invalid_indices = np.unique(np.concatenate((invalid_indices_x, invalid_indices_y)))
-
-        # Remove these points from the dataset using the existing method
         self.remove_points(invalid_indices)
-    
-    
+
     def keep_unlabel_entries_only(self):
-        '''
-        Keep only entries in the dataset where y is NaN
-        '''
+        """
+        Retain only data points where the label (y) is NaN.
+
+        This method modifies the dataset in-place, keeping only the unlabeled data points.
+        """
         unlabeled_data_indices = np.where(np.isnan(self.y))[0]
 
         self.X = self.X[unlabeled_data_indices]
         self.y = self.y[unlabeled_data_indices]
         self.ids = self.ids[unlabeled_data_indices]
         self.w = self.w[unlabeled_data_indices]
-    
+
     @staticmethod
     def remove_mismatched_ids(*datasets):
         """
-        Efficiently compares multiple Dataset instances and removes entries with non-identical IDs across them.
-        Parameters:
-        *datasets : a variable number of Dataset instances to be compared.
+        Remove entries with non-matching IDs across multiple Dataset objects.
+
+        Args:
+            *datasets (Dataset): Variable number of Dataset objects.
+
         Returns:
-        A tuple of Dataset instances with mismatched IDs removed.
+            tuple: A tuple of Dataset objects with only the entries having common IDs across all datasets.
         """
-        # Create sets of IDs from each dataset for fast intersection
         ids_sets = [set(dataset.ids) for dataset in datasets]
-        
-        # Find the common IDs by intersecting the sets
         common_ids = set.intersection(*ids_sets)
-        
-        # Convert the common IDs back to a sorted NumPy array for indexing
         common_ids = np.array(sorted(common_ids), dtype=datasets[0].ids.dtype)
-        
-        # Filter each dataset to only include entries with IDs in the common set
+
         filtered_datasets = []
         for dataset in datasets:
-            # Create a boolean index mask for the current dataset's IDs
             mask = np.isin(dataset.ids, common_ids)
-            
-            # Filter the dataset using the boolean index mask
             filtered_dataset = Dataset(
                 X=dataset.X[mask],
                 y=dataset.y[mask],
@@ -310,67 +358,62 @@ class Dataset:
             )
             filtered_datasets.append(filtered_dataset)
 
-        return tuple(filtered_datasets)    
+        return tuple(filtered_datasets)
 
     @staticmethod
     def check_ids_order(*datasets):
         """
-        Checks if all provided datasets have the same ids in the same order.
+        Check if all provided Dataset objects have the same IDs in the same order.
 
-        Parameters:
-        *datasets : a variable number of Dataset instances to be compared.
+        Args:
+            *datasets (Dataset): Variable number of Dataset objects.
 
         Returns:
-        bool: True if all ids match and are in the same order, False otherwise.
+            bool: True if all datasets have matching IDs in the same order, otherwise False.
         """
-        # We can skip the check if there's only one or no datasets
         if len(datasets) < 2:
             return True
 
-        # Use the ids of the first dataset as the reference
         reference_ids = datasets[0].ids
 
-        # Check each subsequent dataset against the reference
         for dataset in datasets[1:]:
             if not np.array_equal(reference_ids, dataset.ids):
-                return False  # Found a dataset with different ids or order
+                return False
 
-        # All datasets have the same ids in the same order
         return True
-    
 
     def check_mismatches(self, *datasets):
         """
-        Efficiently compares multiple Dataset instances and identifies entries with non-identical IDs across them.
-        Parameters:
-        *datasets : a variable number of Dataset instances to be compared.
+        Identify mismatched IDs across multiple Dataset objects.
+
+        Args:
+            *datasets (Dataset): Variable number of Dataset objects.
+
         Returns:
-        A dictionary with the mismatched IDs for each dataset.
+            dict: A dictionary where each key corresponds to a dataset (e.g., "dataset_0") and the value is a sorted
+                  list of IDs that are missing in that dataset.
         """
         mismatches = {}
-        dataset_ids_sets = [set(dataset.ids) for dataset in datasets]  # Convert IDs to sets for O(1) lookups
-        all_ids_set = set().union(*dataset_ids_sets)  # Union of all IDs
+        dataset_ids_sets = [set(dataset.ids) for dataset in datasets]
+        all_ids_set = set().union(*dataset_ids_sets)
 
-        # Loop over each dataset and compare against the union of all IDs
         for i, dataset_ids in enumerate(dataset_ids_sets):
-            mismatched_ids = all_ids_set - dataset_ids  # Set difference to find mismatches
-
-            # Store only the mismatched IDs
-            mismatches[f"dataset_{i}"] = sorted(mismatched_ids)  # Sort for consistent ordering
+            mismatched_ids = all_ids_set - dataset_ids
+            mismatches[f"dataset_{i}"] = sorted(mismatched_ids)
 
         return mismatches
 
-
     def get_top_or_bottom(self, n, highest=False):
         """
-        Retrieves the lowest or highest 'n' entries from the dataset based on 'y' values.
+        Retrieve the top or bottom n data points based on the labels (y values).
 
-        Parameters:
-        n (int): The number of entries to retrieve.
-        highest (bool): If True, retrieves the highest 'n' entries; otherwise, retrieves the lowest 'n' entries.
+        Args:
+            n (int): Number of data points to retrieve.
+            highest (bool, optional): If True, retrieves the data points with the highest y values;
+                otherwise, retrieves the lowest. Defaults to False.
 
         Returns:
-        Dataset: A new Dataset object containing the lowest or highest 'n' entries.
+            Dataset: A new Dataset object containing the selected data points.
         """
         sorted_indices = np.argsort(self.y)
         if highest:
@@ -379,9 +422,17 @@ class Dataset:
             selected_indices = sorted_indices[:n]
 
         return Dataset(self.X[selected_indices], self.y[selected_indices], self.ids[selected_indices], self.w[selected_indices])
-    
 
     def create_pairwise_dataset(self):
+        """
+        Create a pairwise dataset from the current dataset.
+
+        The new dataset is constructed by pairing each data point with every other data point,
+        concatenating their features, and including the difference between their features.
+
+        Returns:
+            Dataset: A new Dataset object representing the pairwise combinations of data points.
+        """
         X1 = self.X
         X2 = self.X
 
@@ -393,54 +444,56 @@ class Dataset:
 
         X = np.concatenate([X1, X2, X1 - X2], axis=2)
         X = X.reshape(n1 * n2, -1)
-        
+
         y1 = self.y
         y2 = self.y
 
         y = (y1[:, np.newaxis] - y2[np.newaxis, :]).flatten()
 
         return Dataset(X, y)
-    
 
     def split(self, test_size=0.2, shuffle=True):
         """
-        Splits the dataset into training and testing sets.
+        Split the dataset into training and testing subsets.
 
-        Parameters:
-            test_size (float): The proportion of the dataset to include in the test split.
-            shuffle (bool): Whether or not to shuffle the data before splitting.
+        Args:
+            test_size (float, optional): Proportion of the dataset to be used as the test set. Defaults to 0.2.
+            shuffle (bool, optional): If True, shuffles the data before splitting. Defaults to True.
 
         Returns:
-            tuple: Two Dataset objects representing the training and testing sets.
+            tuple: A tuple of two Dataset objects, where the first is the training set and the second is the testing set.
         """
         from sklearn.model_selection import train_test_split
         X_train, X_test, y_train, y_test, ids_train, ids_test, w_train, w_test = train_test_split(
             self.X, self.y, self.ids, self.w, test_size=test_size, random_state=None, shuffle=shuffle
         )
         return Dataset(X_train, y_train, ids_train, w_train), Dataset(X_test, y_test, ids_test, w_test)
-    
 
     def remove_duplicates(self):
         """
-        Removes duplicate entries based on the 'ids' field. 
-        Only the first occurrence of each unique ID is kept.
+        Remove duplicate entries from the dataset based on the 'ids' field.
 
-        After this operation, the dataset will contain no duplicate IDs.
+        Only the first occurrence of each unique ID is retained. The dataset is modified in-place.
         """
-        # Use np.unique with return_index to get indices of first occurrences
         _, unique_indices = np.unique(self.ids, return_index=True)
-        # Sort indices to maintain the original order where possible
         unique_indices = np.sort(unique_indices)
 
-        # Reindex the dataset
         self.X = self.X[unique_indices]
         self.y = self.y[unique_indices]
         self.ids = self.ids[unique_indices]
         self.w = self.w[unique_indices]
 
-
     def get_range(self, start, end):
-        # Sort by y
+        """
+        Retrieve a subset of data points from the dataset based on a range of indices after sorting by labels.
+
+        Args:
+            start (int): The starting index of the range.
+            end (int): The ending index of the range.
+
+        Returns:
+            Dataset: A new Dataset object containing the data points within the specified range.
+        """
         temp_dataset = self.copy()
         temp_dataset.sort_by_y()
         indices = np.arange(start, end)
