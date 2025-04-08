@@ -3,6 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
+  - python
   - joblib
   - lightgbm
   - matplotlib
@@ -11,10 +12,7 @@ dependencies:
   - pykwalify
   - PyYAML
   - rdkit
-  - scikit_learn
   - scipy
   - pip:
     - MDRMF
-
-
-
+    - scikit_learn

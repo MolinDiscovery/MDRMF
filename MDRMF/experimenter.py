@@ -18,7 +18,7 @@ class Experimenter:
 
     def __init__(self, config_file: str):
 
-        self.config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), config_file)
+        self.config_file = config_file
         self.experiments = self._load_config()
         self.uniform_initial_sample = self.get_config_value(['uniform_initial_sample']) or None
         self.unique_initial_sample = self.get_config_value(['unique_initial_sample', 'sample_size']) or None
