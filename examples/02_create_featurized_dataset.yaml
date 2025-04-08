@@ -1,0 +1,12 @@
+- create_dataset:
+    name: 10K_MACCS
+    shuffle: True # used to shuffle a sorted dataset randomly.
+
+    data:
+      datafile: data/10K.csv
+      SMILES_col: SMILES
+      scores_col: r_i_docking_score
+      ids_col: SMILES
+
+    featurizer:
+      name: MACCS

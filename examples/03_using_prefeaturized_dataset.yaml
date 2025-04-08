@@ -1,0 +1,16 @@
+- results_path: using_prefeaturized_dataset # (optional) speficy directory to save results.
+
+- Experiment:
+    name: EI
+
+    dataset: data/dataset_mqn.pkl
+
+    model:
+        name: MLP
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: EI
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]
