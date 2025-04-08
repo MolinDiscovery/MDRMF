@@ -2,12 +2,16 @@
 
 - Experiment:
     name: simple_experiment
+    replicate: 3
 
     data:
       datafile: data/10K.csv
       SMILES_col: SMILES
       scores_col: docking_score
       ids_col: SMILES
+
+    featurizer:
+      name: morgan    
 
     model:
         name: RF # Random Forest

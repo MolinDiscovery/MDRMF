@@ -1,4 +1,4 @@
-,i_i_glide_lignum,r_i_docking_score,SMILES
+,i_i_glide_lignum,docking_score,SMILES
 0,13477,-13.1268,C[C@@H](NC(=O)N1C[C@H](c2ccccc2)[C@H]2COCC[C@H]21)c1ccc(NC(=O)NC2CC2)cc1
 1,516,-12.6629,O=C(Nc1cccc(C(=O)N2CCC(c3c[nH]c4ncccc34)CC2)c1)[C@@H]1Cc2ccccc2O1
 2,9425,-12.487,Cc1nn(-c2ccccc2)c2nc(C(=O)N3CCC([C@H]4C(=O)Nc5ccccc54)CC3)ccc12

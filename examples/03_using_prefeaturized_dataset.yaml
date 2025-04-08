@@ -1,12 +1,13 @@
 - results_path: using_prefeaturized_dataset # (optional) speficy directory to save results.
 
 - Experiment:
-    name: EI
+    name: prefeaturized experiment
+    replicate: 3
 
     dataset: data/dataset_mqn.pkl
 
     model:
-        name: MLP
+        name: RF
         iterations: 5
         acquisition_size: 20
         acquisition_method: EI

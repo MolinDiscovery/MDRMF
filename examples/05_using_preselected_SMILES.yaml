@@ -1,0 +1,45 @@
+- results_path: using_preselected_SMILES
+
+- unique_initial_sample:
+    seeds: [
+    [
+        'O=C(Nc1ccc(Nc2ncccn2)cc1)c1cn[nH]c1-c1ccco1',
+        'NC(=O)c1ccc(C(=O)N2CCC[C@H](Cn3ccnn3)C2)nc1',
+        'COc1ccnc(NC[C@]23C[C@](NC(=O)[C@@H]4C[C@@H]4C)(C2)C(C)(C)O3)n1',
+        'Cc1csc(N2CCN(C(=O)c3ccc(C(=O)NC4CC4)cc3)C[C@H]2C)n1',
+        'CN1C(=O)CCc2cc(NC(=O)NC[C@@H](O)c3ccccc3)ccc21',
+        'O=C(Nc1cccnc1)c1cccc(S(=O)(=O)N2CCCCC2)c1',
+        'Cc1cc([N+](=O)[O-])c(C)c(S(=O)(=O)N(C)[C@@H]2C[N@H+]3CC[C@@H]2CC3)c1',
+        'Cc1ccc(C(=O)N2CC[C@H](c3cc(O)[nH]n3)C2)cc1',
+        'Cc1cccc([C@@H]2CCCN2C(=O)NCc2ccc(S(C)(=O)=O)cc2)n1',
+        'Cc1ccc(C[C@@H](C)NC(=O)N2CCS(=O)(=O)CC2)s1'
+    ],
+    [
+        'O=C([O-])c1cccc(CS(=O)(=O)N2CC[C@H](O)C2)c1',
+        'O=C(CCc1cccc(Br)c1)N[C@H]1C[C@H](Cn2ccnc2)C[C@@H]1O',
+        'Cc1ccccc1CNc1cc(C(N)=O)ccc1Cl',
+        'COc1ccc(OC)c([C@@H]2CCCN2C(=O)c2ccnc(OC)n2)c1',
+        'C=CCN(CC(=O)[O-])S(=O)(=O)c1ccc(OC)c(Cl)c1',
+        'O=C(N[C@H]1C[C@@H](Cn2ccnc2)C[C@H]1O)c1ccc2ccccc2c1',
+        'COC[C@@H]1CN(C(=O)c2ncoc2C2CC2)CCO1',
+        'COCCN1C(=O)N[C@H]2CN(C(=O)c3cccc(C#N)c3)CC[C@@H]21',
+        'CCc1nocc1CN(C)C(=O)c1ccc2[nH]c(=O)n(C)c2c1',
+        'CC[NH+]1CCN([C@@H]2CCN(C(=O)Cc3cncs3)C2)CC1'
+    ]
+]
+
+- Experiment:
+    name: using preselected SMILES
+    # Notice, I don't specify how many replicates to do now, as this is implicitly stated by the amount of lists in the unique_initial_sample.
+
+    dataset: data/dataset_mqn.pkl
+
+    model:
+        name: RF
+        iterations: 5
+        acquisition_size: 20
+        acquisition_method: EI
+
+    metrics: 
+        names: [top-k, top-k-acquired]
+        k: [100]

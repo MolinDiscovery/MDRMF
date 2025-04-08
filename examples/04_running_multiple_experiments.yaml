@@ -1,5 +1,8 @@
+- results_path: running_multiple_experiments
+
 - Experiment:
     name: exp1
+    replicate: 3
 
     dataset: data/dataset_mqn.pkl
 
@@ -16,6 +19,7 @@
 
 - Experiment:
     name: exp2
+    replicate: 3
 
     dataset: data/dataset_mqn.pkl
 

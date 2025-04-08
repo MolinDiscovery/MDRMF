@@ -29,9 +29,15 @@ Demonstrates how to run multiple experiments in a single configuration:
 - Both experiments use the same dataset and model type
 - Helpful for comparative analysis
 
+### 5. Using Preselected SMILES (`05_using_preselected_SMILES.yaml`)
+Shows how to use specific molecules as starting points:
+- Defines explicit sets of seed molecules using SMILES strings
+- Uses different seeds for each experimental replicate
+- Demonstrates an alternative to random initialization
+
 ## Interactive Examples
 
-### 5. Inspecting Datasets (`05_inspect_dataset.ipynb`)
+### Inspecting Datasets (`06_inspect_dataset.ipynb`)
 A Jupyter notebook demonstrating how to:
 - Load and inspect datasets
 - View feature vectors and scores
