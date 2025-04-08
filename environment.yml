@@ -3,17 +3,18 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - bokeh=3.4.0
-  - matplotlib=3.8.4
-  - lightgbm=4.3.0
-  - numpy=1.26.4
-  - pykwalify=1.8.0
-  - python=3.10.14
-  - pandas=2.2.1
-  - rdkit=2024.03.2
-  - scikit-learn=1.4.2
-  - scipy=1.13.0
-  - seaborn=0.12.2
-  - yaml=0.2.5
+  - joblib
+  - lightgbm
+  - matplotlib
+  - numpy
+  - pandas
+  - pykwalify
+  - PyYAML
+  - rdkit
+  - scikit_learn
+  - scipy
   - pip:
     - MDRMF
+
+
+
