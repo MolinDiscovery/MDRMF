@@ -55,6 +55,8 @@ MDRMF works by reading YAML configuration files that define the experiments you 
 ## Testing your setup (retrospective study)
 Below is an example of a simple configuration file for a retrospective experiment:
 
+💿 **Datasets** from the paper can be downloaded from [here](https://sid.erda.dk/sharelink/dVyPBnFi3U).
+
 ```yaml
 - Experiment:
     name: retrospective_docking_experiment
